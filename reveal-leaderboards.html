@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #f5576c;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .tab-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: #e9ecef;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #f5576c;
+            color: white;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .leaderboard-table th,
+        .leaderboard-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .leaderboard-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .leaderboard-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .pos-1 {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%) !important;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .pos-2 {
+            background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%) !important;
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        .pos-3 {
+            background: linear-gradient(135deg, #cd7f32 0%, #e8a87c 100%) !important;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .alert {
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 3px solid #ffc107;
+        }
+
+        .alert h2 {
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            min-width: 250px;
+        }
+
+        .podium-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .podium-place {
+            text-align: center;
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        .podium-place.first {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            transform: scale(1.1);
+        }
+
+        .podium-place.second {
+            background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+        }
+
+        .podium-place.third {
+            background: linear-gradient(135deg, #cd7f32 0%, #e8a87c 100%);
+        }
+
+        .podium-medal {
+            font-size: 64px;
+            margin-bottom: 15px;
+        }
+
+        .podium-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .podium-score {
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏆 Final Results</h1>
+            <p style="color: #6c757d; font-size: 18px;">Official Tournament Leaderboards</p>
+        </div>
+
+        <div class="card">
+            <div class="tab-group">
+                <button class="tab-btn active" onclick="showTab('daily')">Daily Final</button>
+                <button class="tab-btn" onclick="showTab('overall')">Overall Final</button>
+            </div>
+
+            <div id="daily-section">
+                <div class="form-group" style="text-align: center;">
+                    <label style="font-weight: 600; font-size: 18px; margin-bottom: 10px; display: block;">Select Day:</label>
+                    <select id="day-select" onchange="loadDailyFinal()">
+                        <option value="">-- Select Day --</option>
+                    </select>
+                </div>
+                <div id="daily-content"></div>
+            </div>
+
+            <div id="overall-section" style="display: none;">
+                <div id="overall-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tournamentData = null;
+        let adminControls = null;
+        let currentTab = 'daily';
+
+        function init() {
+            loadData();
+            populateDaySelect();
+            showTab('daily');
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('golfTournamentData');
+            if (saved) {
+                tournamentData = JSON.parse(saved);
+            }
+
+            const controlsSaved = localStorage.getItem('adminControls');
+            if (controlsSaved) {
+                adminControls = JSON.parse(controlsSaved);
+            }
+        }
+
+        function populateDaySelect() {
+            const select = document.getElementById('day-select');
+            select.innerHTML = '<option value="">-- Select Day --</option>';
+
+            if (tournamentData && tournamentData.rounds) {
+                tournamentData.rounds.forEach((round, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `Day ${index + 1}`;
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        function showTab(tab) {
+            currentTab = tab;
+
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (tab === 'daily') {
+                document.getElementById('daily-section').style.display = 'block';
+                document.getElementById('overall-section').style.display = 'none';
+                loadDailyFinal();
+            } else {
+                document.getElementById('daily-section').style.display = 'none';
+                document.getElementById('overall-section').style.display = 'block';
+                loadOverallFinal();
+            }
+        }
+
+        function loadDailyFinal() {
+            const container = document.getElementById('daily-content');
+            const dayIndex = parseInt(document.getElementById('day-select').value);
+
+            // Check permission
+            if (!adminControls || !adminControls.visibility.dailyFinal) {
+                container.innerHTML = `
+                    <div class="alert alert-warning">
+                        <h2>🔒 Results Not Yet Available</h2>
+                        <p>Daily final results have not been revealed by the tournament administrator.</p>
+                        <p style="margin-top: 10px;">Check back after the official announcement!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (isNaN(dayIndex)) {
+                container.innerHTML = '<p style="text-align: center; color: #6c757d; margin: 40px 0;">Please select a day</p>';
+                return;
+            }
+
+            const results = calculateDayLeaderboard(dayIndex);
+            renderLeaderboard(container, results, `Day ${dayIndex + 1} Final Results`, true);
+        }
+
+        function loadOverallFinal() {
+            const container = document.getElementById('overall-content');
+
+            // Check permission
+            if (!adminControls || !adminControls.visibility.overallFinal) {
+                container.innerHTML = `
+                    <div class="alert alert-warning">
+                        <h2>🔒 Results Not Yet Available</h2>
+                        <p>Overall final results have not been revealed by the tournament administrator.</p>
+                        <p style="margin-top: 10px;">The suspense builds... check back after the official announcement!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const results = calculateOverallLeaderboard();
+            renderLeaderboard(container, results, 'Overall Tournament Final', false);
+        }
+
+        function renderLeaderboard(container, results, title, showPodium) {
+            if (results.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #6c757d;">No scores available yet.</p>';
+                return;
+            }
+
+            let html = `<h2 style="text-align: center; color: #f5576c; margin-bottom: 30px; font-size: 32px;">${title}</h2>`;
+
+            // Podium for top 3
+            if (showPodium && results.length >= 3) {
+                const top3 = results.slice(0, 3);
+                html += '<div class="podium-display">';
+
+                top3.forEach((player, index) => {
+                    const placeClass = index === 0 ? 'first' : index === 1 ? 'second' : 'third';
+                    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
+
+                    html += `<div class="podium-place ${placeClass}">`;
+                    html += `<div class="podium-medal">${medal}</div>`;
+                    html += `<div class="podium-name">${player.playerName}</div>`;
+                    html += `<div class="podium-score">${player.totalPoints} points</div>`;
+                    html += '</div>';
+                });
+
+                html += '</div>';
+            }
+
+            // Full leaderboard table
+            html += '<table class="leaderboard-table"><thead><tr>';
+            html += '<th>Position</th><th>Player</th><th>Handicap</th><th>Points</th>';
+            html += '</tr></thead><tbody>';
+
+            results.forEach((player, index) => {
+                const rowClass = index === 0 ? 'pos-1' : index === 1 ? 'pos-2' : index === 2 ? 'pos-3' : '';
+                html += `<tr class="${rowClass}">`;
+                html += `<td>${index + 1}</td>`;
+                html += `<td><strong>${player.playerName}</strong></td>`;
+                html += `<td>${player.playingHandicap}</td>`;
+                html += `<td><strong>${player.totalPoints}</strong></td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function calculateDayLeaderboard(dayIndex) {
+            const results = [];
+            const round = tournamentData.rounds[dayIndex];
+
+            if (!round.scores) return [];
+
+            tournamentData.players.forEach(player => {
+                if (round.scores[player.id]) {
+                    const result = calculatePlayerDay(player.id, dayIndex);
+                    if (result) results.push(result);
+                }
+            });
+
+            results.sort((a, b) => b.totalPoints - a.totalPoints);
+            return results;
+        }
+
+        function calculateOverallLeaderboard() {
+            const playerTotals = new Map();
+
+            tournamentData.rounds.forEach((round, dayIndex) => {
+                tournamentData.players.forEach(player => {
+                    if (round.scores && round.scores[player.id]) {
+                        const result = calculatePlayerDay(player.id, dayIndex);
+                        if (result) {
+                            if (!playerTotals.has(player.id)) {
+                                playerTotals.set(player.id, {
+                                    playerName: player.name,
+                                    playingHandicap: player.playingHandicap,
+                                    totalPoints: 0
+                                });
+                            }
+                            const total = playerTotals.get(player.id);
+                            total.totalPoints += result.totalPoints;
+                        }
+                    }
+                });
+            });
+
+            const results = Array.from(playerTotals.values());
+            results.sort((a, b) => b.totalPoints - a.totalPoints);
+            return results;
+        }
+
+        function calculatePlayerDay(playerId, dayIndex) {
+            const player = tournamentData.players.find(p => p.id === playerId);
+            const round = tournamentData.rounds[dayIndex];
+            const scores = round.scores[playerId];
+
+            let totalPoints = 0;
+
+            for (let i = 0; i < 18; i++) {
+                const hole = tournamentData.course.holes[i];
+                const grossScore = scores[i];
+
+                if (grossScore && grossScore > 0) {
+                    const strokes = getStrokesReceived(player.playingHandicap, hole.strokeIndex);
+                    const netScore = grossScore - strokes;
+                    totalPoints += getStablefordPoints(netScore, hole.par);
+                }
+            }
+
+            return {
+                playerId: playerId,
+                playerName: player.name,
+                playingHandicap: player.playingHandicap,
+                totalPoints: totalPoints
+            };
+        }
+
+        function getStrokesReceived(playingHandicap, strokeIndex) {
+            if (playingHandicap <= 0) return 0;
+            if (playingHandicap >= strokeIndex) {
+                return Math.floor(playingHandicap / 18) + 1;
+            } else if (playingHandicap >= strokeIndex - 18) {
+                return 1;
+            }
+            return 0;
+        }
+
+        function getStablefordPoints(netScore, par) {
+            if (!netScore || netScore <= 0) return 0;
+            const relative = netScore - par;
+            if (relative <= -2) return 4;
+            if (relative === -1) return 3;
+            if (relative === 0) return 2;
+            if (relative === 1) return 1;
+            return 0;
+        }
+
+        init();
+    </script>
+</body>
+</html>

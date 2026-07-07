@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #1e3c72;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .tab-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: #e9ecef;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #2a5298;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        select, input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .btn {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #1e3c72;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .team-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2a5298;
+        }
+
+        .team-card h3 {
+            color: #2a5298;
+            margin-bottom: 15px;
+        }
+
+        .player-in-team {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .team-handicap {
+            background: #e7f3ff;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #2a5298;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .player-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .player-checkbox {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .player-checkbox input[type="checkbox"] {
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👥 Team Management</h1>
+            <p style="color: #6c757d;">Create and manage teams for Best Ball and Ambrose competitions</p>
+        </div>
+
+        <div class="card">
+            <div class="tab-group">
+                <button class="tab-btn active" onclick="showTab('bestball')">Best Ball Teams</button>
+                <button class="tab-btn" onclick="showTab('ambrose')">Ambrose Teams</button>
+            </div>
+
+            <div id="bestball-section">
+                <h2 style="color: #2a5298; margin-bottom: 20px;">Best Ball (4BBB) Teams</h2>
+                <p style="color: #6c757d; margin-bottom: 20px;">Each player plays their own ball. Best Stableford score per hole counts for the team.</p>
+                
+                <div class="form-group">
+                    <label for="bb-round-select">Select Round:</label>
+                    <select id="bb-round-select" style="max-width: 300px;">
+                        <option value="">-- Select Round --</option>
+                    </select>
+                </div>
+
+                <div id="bb-team-creator" style="display: none;">
+                    <h3 style="margin: 20px 0;">Create New Team</h3>
+                    
+                    <div class="form-group">
+                        <label>Select Players (2-4 players):</label>
+                        <div class="player-grid" id="bb-player-grid"></div>
+                    </div>
+
+                    <button class="btn" onclick="createBestBallTeam()">Create Team</button>
+                </div>
+
+                <div id="bb-teams-display" style="margin-top: 30px;"></div>
+            </div>
+
+            <div id="ambrose-section" style="display: none;">
+                <h2 style="color: #2a5298; margin-bottom: 20px;">Ambrose/Scramble Teams</h2>
+                <p style="color: #6c757d; margin-bottom: 20px;">All players hit from best shot. Team has one score per hole. Team handicap calculated automatically.</p>
+                
+                <div class="form-group">
+                    <label for="amb-round-select">Select Round:</label>
+                    <select id="amb-round-select" style="max-width: 300px;">
+                        <option value="">-- Select Round --</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="max-width: 400px;">
+                    <label>
+                        <input type="checkbox" id="ambrose-skins-enabled" style="width: auto; margin-right: 10px;">
+                        Enable Ambrose Skins (team vs team)
+                    </label>
+                </div>
+
+                <div id="amb-team-creator" style="display: none;">
+                    <h3 style="margin: 20px 0;">Create New Team</h3>
+                    
+                    <div class="form-group">
+                        <label>Select Players (2-4 players):</label>
+                        <div class="player-grid" id="amb-player-grid"></div>
+                    </div>
+
+                    <button class="btn" onclick="createAmbroseTeam()">Create Team</button>
+                </div>
+
+                <div id="amb-teams-display" style="margin-top: 30px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tournamentData = null;
+        let bestBallTeams = {}; // { roundIndex: [teams] }
+        let ambroseTeams = {}; // { roundIndex: { teams: [], skinsEnabled: false } }
+        let selectedPlayers = new Set();
+
+        function init() {
+            loadData();
+            populateRoundSelects();
+            loadTeams();
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('golfTournamentData');
+            if (saved) {
+                tournamentData = JSON.parse(saved);
+            }
+            
+            const teamsSaved = localStorage.getItem('golfTeamsData');
+            if (teamsSaved) {
+                const teamsData = JSON.parse(teamsSaved);
+                bestBallTeams = teamsData.bestBall || {};
+                ambroseTeams = teamsData.ambrose || {};
+            }
+        }
+
+        function saveTeams() {
+            localStorage.setItem('golfTeamsData', JSON.stringify({
+                bestBall: bestBallTeams,
+                ambrose: ambroseTeams
+            }));
+        }
+
+        function populateRoundSelects() {
+            const bbSelect = document.getElementById('bb-round-select');
+            const ambSelect = document.getElementById('amb-round-select');
+            
+            bbSelect.innerHTML = '<option value="">-- Select Round --</option>';
+            ambSelect.innerHTML = '<option value="">-- Select Round --</option>';
+            
+            if (tournamentData && tournamentData.rounds) {
+                tournamentData.rounds.forEach((round, index) => {
+                    const option1 = document.createElement('option');
+                    option1.value = index;
+                    option1.textContent = `Round ${round.number}`;
+                    bbSelect.appendChild(option1);
+                    
+                    const option2 = document.createElement('option');
+                    option2.value = index;
+                    option2.textContent = `Round ${round.number}`;
+                    ambSelect.appendChild(option2);
+                });
+            }
+            
+            bbSelect.addEventListener('change', () => loadBestBallRound());
+            ambSelect.addEventListener('change', () => loadAmbroseRound());
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (tab === 'bestball') {
+                document.getElementById('bestball-section').style.display = 'block';
+                document.getElementById('ambrose-section').style.display = 'none';
+            } else {
+                document.getElementById('bestball-section').style.display = 'none';
+                document.getElementById('ambrose-section').style.display = 'block';
+            }
+        }
+
+        function loadBestBallRound() {
+            const roundIndex = parseInt(document.getElementById('bb-round-select').value);
+            if (isNaN(roundIndex)) {
+                document.getElementById('bb-team-creator').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('bb-team-creator').style.display = 'block';
+            populatePlayerGrid('bb');
+            displayBestBallTeams(roundIndex);
+        }
+
+        function loadAmbroseRound() {
+            const roundIndex = parseInt(document.getElementById('amb-round-select').value);
+            if (isNaN(roundIndex)) {
+                document.getElementById('amb-team-creator').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('amb-team-creator').style.display = 'block';
+            
+            // Load skins enabled status
+            if (ambroseTeams[roundIndex]) {
+                document.getElementById('ambrose-skins-enabled').checked = ambroseTeams[roundIndex].skinsEnabled || false;
+            }
+            
+            populatePlayerGrid('amb');
+            displayAmbroseTeams(roundIndex);
+        }
+
+        function populatePlayerGrid(type) {
+            const gridId = type === 'bb' ? 'bb-player-grid' : 'amb-player-grid';
+            const grid = document.getElementById(gridId);
+            grid.innerHTML = '';
+            selectedPlayers.clear();
+            
+            if (!tournamentData || !tournamentData.players) return;
+            
+            tournamentData.players.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'player-checkbox';
+                div.innerHTML = `
+                    <input type="checkbox" id="${type}-player-${player.id}" value="${player.id}">
+                    <label for="${type}-player-${player.id}">${player.name} (${player.playingHandicap})</label>
+                `;
+                grid.appendChild(div);
+                
+                const checkbox = div.querySelector('input');
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        selectedPlayers.add(player.id);
+                    } else {
+                        selectedPlayers.delete(player.id);
+                    }
+                });
+            });
+        }
+
+        function createBestBallTeam() {
+            const roundIndex = parseInt(document.getElementById('bb-round-select').value);
+            
+            if (selectedPlayers.size < 2 || selectedPlayers.size > 4) {
+                alert('Please select 2-4 players for the team');
+                return;
+            }
+            
+            const teamPlayers = Array.from(selectedPlayers).map(id => 
+                tournamentData.players.find(p => p.id === id)
+            );
+            
+            if (!bestBallTeams[roundIndex]) {
+                bestBallTeams[roundIndex] = [];
+            }
+            
+            const teamNumber = bestBallTeams[roundIndex].length + 1;
+            bestBallTeams[roundIndex].push({
+                name: `Team ${teamNumber}`,
+                players: teamPlayers
+            });
+            
+            saveTeams();
+            selectedPlayers.clear();
+            loadBestBallRound();
+            alert(`Team ${teamNumber} created!`);
+        }
+
+        function createAmbroseTeam() {
+            const roundIndex = parseInt(document.getElementById('amb-round-select').value);
+            
+            if (selectedPlayers.size < 2 || selectedPlayers.size > 4) {
+                alert('Please select 2-4 players for the team');
+                return;
+            }
+            
+            const teamPlayers = Array.from(selectedPlayers).map(id => 
+                tournamentData.players.find(p => p.id === id)
+            );
+            
+            if (!ambroseTeams[roundIndex]) {
+                ambroseTeams[roundIndex] = { teams: [], skinsEnabled: false };
+            }
+            
+            // Calculate team handicap
+            const totalHandicap = teamPlayers.reduce((sum, p) => sum + p.playingHandicap, 0);
+            let teamHandicap;
+            
+            if (teamPlayers.length === 2) {
+                teamHandicap = Math.round(totalHandicap / 4);
+            } else if (teamPlayers.length === 3) {
+                teamHandicap = Math.round(totalHandicap / 6);
+            } else {
+                teamHandicap = Math.round(totalHandicap / 8);
+            }
+            
+            const teamNumber = ambroseTeams[roundIndex].teams.length + 1;
+            ambroseTeams[roundIndex].teams.push({
+                name: `Team ${teamNumber}`,
+                players: teamPlayers,
+                teamHandicap: teamHandicap
+            });
+            
+            // Save skins enabled status
+            ambroseTeams[roundIndex].skinsEnabled = document.getElementById('ambrose-skins-enabled').checked;
+            
+            saveTeams();
+            selectedPlayers.clear();
+            loadAmbroseRound();
+            alert(`Team ${teamNumber} created with team handicap ${teamHandicap}!`);
+        }
+
+        function displayBestBallTeams(roundIndex) {
+            const display = document.getElementById('bb-teams-display');
+            const teams = bestBallTeams[roundIndex] || [];
+            
+            if (teams.length === 0) {
+                display.innerHTML = '<p style="color: #6c757d;">No teams created yet for this round.</p>';
+                return;
+            }
+            
+            let html = '<h3 style="margin-bottom: 15px;">Teams for this Round:</h3>';
+            
+            teams.forEach((team, index) => {
+                html += `<div class="team-card">`;
+                html += `<h3>${team.name}</h3>`;
+                
+                team.players.forEach(player => {
+                    html += `<div class="player-in-team">`;
+                    html += `<span>${player.name} (HCP ${player.playingHandicap})</span>`;
+                    html += `</div>`;
+                });
+                
+                html += `<button class="btn btn-danger btn-small" style="margin-top: 10px;" onclick="deleteTeam('bestball', ${roundIndex}, ${index})">Delete Team</button>`;
+                html += `</div>`;
+            });
+            
+            display.innerHTML = html;
+        }
+
+        function displayAmbroseTeams(roundIndex) {
+            const display = document.getElementById('amb-teams-display');
+            const data = ambroseTeams[roundIndex];
+            
+            if (!data || data.teams.length === 0) {
+                display.innerHTML = '<p style="color: #6c757d;">No teams created yet for this round.</p>';
+                return;
+            }
+            
+            let html = '<h3 style="margin-bottom: 15px;">Teams for this Round:</h3>';
+            
+            if (data.skinsEnabled) {
+                html += '<div class="alert alert-info">✓ Ambrose Skins enabled for this round</div>';
+            }
+            
+            data.teams.forEach((team, index) => {
+                html += `<div class="team-card">`;
+                html += `<h3>${team.name}</h3>`;
+                
+                team.players.forEach(player => {
+                    html += `<div class="player-in-team">`;
+                    html += `<span>${player.name} (HCP ${player.playingHandicap})</span>`;
+                    html += `</div>`;
+                });
+                
+                html += `<div class="team-handicap">Team Handicap: ${team.teamHandicap} (${team.players.length} players)</div>`;
+                html += `<button class="btn btn-danger btn-small" style="margin-top: 10px;" onclick="deleteTeam('ambrose', ${roundIndex}, ${index})">Delete Team</button>`;
+                html += `</div>`;
+            });
+            
+            display.innerHTML = html;
+        }
+
+        function deleteTeam(type, roundIndex, teamIndex) {
+            if (!confirm('Delete this team?')) return;
+            
+            if (type === 'bestball') {
+                bestBallTeams[roundIndex].splice(teamIndex, 1);
+                saveTeams();
+                displayBestBallTeams(roundIndex);
+            } else {
+                ambroseTeams[roundIndex].teams.splice(teamIndex, 1);
+                saveTeams();
+                displayAmbroseTeams(roundIndex);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

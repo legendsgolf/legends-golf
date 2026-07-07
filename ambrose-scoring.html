@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambrose Team Scoring</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .team-info {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .team-info h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .scorecard-container {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        .scorecard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .scorecard-table th,
+        .scorecard-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .scorecard-table th {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        .scorecard-table .section-header {
+            background: #555;
+            color: white;
+        }
+
+        .score-input {
+            width: 40px;
+            padding: 6px;
+            text-align: center;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .score-input:focus {
+            outline: none;
+            border-color: #764ba2;
+            background: #f0f8ff;
+        }
+
+        .stableford-display {
+            color: #2a5298;
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        .total-cell {
+            background: #d4edda;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        select {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            max-width: 300px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .save-indicator {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border-radius: 6px;
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .save-indicator.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .scorecard-table {
+                font-size: 12px;
+            }
+            .score-input {
+                width: 35px;
+                padding: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👥 Ambrose Team Scoring</h1>
+            <p style="color: #6c757d;">Enter your team's score (one ball, best shot)</p>
+        </div>
+
+        <!-- Team Selection -->
+        <div id="selection-section">
+            <div class="card">
+                <h2 style="color: #667eea; margin-bottom: 20px;">Select Team</h2>
+                
+                <div class="form-group">
+                    <label for="round-select">Select Round:</label>
+                    <select id="round-select" onchange="loadTeams()">
+                        <option value="">-- Select Round --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="team-select">Select Your Team:</label>
+                    <select id="team-select" onchange="startScoring()">
+                        <option value="">-- Select Team --</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scoring Section -->
+        <div id="scoring-section" style="display: none;">
+            <div class="card">
+                <button class="btn btn-secondary" onclick="logout()">← Back to Team Selection</button>
+                
+                <div class="team-info" id="team-info"></div>
+
+                <div class="alert alert-info">
+                    <strong>How Ambrose Works:</strong> Your team plays one ball, always from the best shot. Enter your team's single score for each hole.
+                    <div id="save-indicator" class="save-indicator">✓ Saved</div>
+                </div>
+
+                <div class="scorecard-container">
+                    <table class="scorecard-table" id="scorecard-table"></table>
+                </div>
+
+                <button class="btn" onclick="saveScores()">💾 Save Scorecard</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tournamentData = null;
+        let teamsData = null;
+        let ambroseScores = {}; 
+        let currentRound = null;
+        let currentTeam = null;
+        let saveTimeout = null;
+
+        function init() {
+            loadData();
+            populateRoundSelect();
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('golfTournamentData');
+            if (saved) {
+                tournamentData = JSON.parse(saved);
+            }
+
+            const teamsSaved = localStorage.getItem('golfTeamsData');
+            if (teamsSaved) {
+                teamsData = JSON.parse(teamsSaved);
+            }
+
+            const scoresSaved = localStorage.getItem('ambroseScores');
+            if (scoresSaved) {
+                ambroseScores = JSON.parse(scoresSaved);
+            }
+        }
+
+        function populateRoundSelect() {
+            const select = document.getElementById('round-select');
+            select.innerHTML = '<option value="">-- Select Round --</option>';
+
+            if (tournamentData && tournamentData.rounds) {
+                tournamentData.rounds.forEach((round, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `Round ${round.number}`;
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        function loadTeams() {
+            const roundIndex = parseInt(document.getElementById('round-select').value);
+            const teamSelect = document.getElementById('team-select');
+            teamSelect.innerHTML = '<option value="">-- Select Team --</option>';
+
+            if (isNaN(roundIndex)) return;
+
+            if (!teamsData || !teamsData.ambrose || !teamsData.ambrose[roundIndex]) {
+                alert('No Ambrose teams created for this round. Please create teams first.');
+                return;
+            }
+
+            const teams = teamsData.ambrose[roundIndex].teams;
+            teams.forEach((team, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${team.name} (${team.players.map(p => p.name).join(', ')})`;
+                teamSelect.appendChild(option);
+            });
+        }
+
+        function startScoring() {
+            const roundIndex = parseInt(document.getElementById('round-select').value);
+            const teamIndex = parseInt(document.getElementById('team-select').value);
+
+            if (isNaN(roundIndex) || isNaN(teamIndex)) return;
+
+            currentRound = roundIndex;
+            const teams = teamsData.ambrose[roundIndex].teams;
+            currentTeam = teams[teamIndex];
+            currentTeam.teamIndex = teamIndex;
+
+            if (!ambroseScores[roundIndex]) {
+                ambroseScores[roundIndex] = {};
+            }
+            if (!ambroseScores[roundIndex][teamIndex]) {
+                ambroseScores[roundIndex][teamIndex] = Array(18).fill(null);
+            }
+
+            displayScorecard();
+            document.getElementById('selection-section').style.display = 'none';
+            document.getElementById('scoring-section').style.display = 'block';
+        }
+
+        function displayScorecard() {
+            const teamInfo = document.getElementById('team-info');
+            teamInfo.innerHTML = `
+                <h3>${currentTeam.name}</h3>
+                <p style="margin: 10px 0;">
+                    <strong>Team Members:</strong> ${currentTeam.players.map(p => `${p.name} (HCP ${p.playingHandicap})`).join(', ')}
+                </p>
+                <p style="color: #667eea; font-weight: bold;">Team Handicap: ${currentTeam.teamHandicap}</p>
+            `;
+
+            const table = document.getElementById('scorecard-table');
+            let html = '<thead><tr>';
+            
+            html += '<th>Hole</th>';
+            for (let i = 1; i <= 9; i++) html += `<th>${i}</th>`;
+            html += '<th class="section-header">OUT</th>';
+            for (let i = 10; i <= 18; i++) html += `<th>${i}</th>`;
+            html += '<th class="section-header">IN</th>';
+            html += '<th class="total-cell">TOTAL</th>';
+            html += '</tr>';
+
+            html += '<tr><td><strong>Par</strong></td>';
+            let outPar = 0, inPar = 0;
+            tournamentData.course.holes.forEach((hole, idx) => {
+                html += `<td>${hole.par}</td>`;
+                if (idx < 9) outPar += hole.par;
+                else inPar += hole.par;
+                if (idx === 8) html += `<td><strong>${outPar}</strong></td>`;
+            });
+            html += `<td><strong>${inPar}</strong></td>`;
+            html += `<td class="total-cell">${outPar + inPar}</td>`;
+            html += '</tr>';
+
+            html += '<tr><td><strong>SI</strong></td>';
+            tournamentData.course.holes.forEach((hole, idx) => {
+                html += `<td style="font-size: 12px;">${hole.strokeIndex}</td>`;
+                if (idx === 8) html += '<td>-</td>';
+            });
+            html += '<td>-</td><td class="total-cell">-</td></tr>';
+
+            html += '<tr><td><strong>Score</strong></td>';
+            const scores = ambroseScores[currentRound][currentTeam.teamIndex];
+            
+            for (let i = 0; i < 18; i++) {
+                const score = scores[i] || '';
+                html += `<td><input type="number" class="score-input" id="score-${i}" value="${score}" min="1" max="15" onchange="updateTotals()" onkeyup="handleKeyUp(event, ${i})"></td>`;
+                if (i === 8) html += `<td id="out-total"><strong>0</strong></td>`;
+            }
+            html += `<td id="in-total"><strong>0</strong></td>`;
+            html += `<td class="total-cell" id="grand-total">0</td>`;
+            html += '</tr>';
+
+            html += '<tr><td><em>Stableford</em></td>';
+            for (let i = 0; i < 18; i++) {
+                html += `<td class="stableford-display" id="stableford-${i}">-</td>`;
+                if (i === 8) html += `<td id="out-stableford" class="stableford-display"><strong>0</strong></td>`;
+            }
+            html += `<td id="in-stableford" class="stableford-display"><strong>0</strong></td>`;
+            html += `<td class="total-cell stableford-display" id="total-stableford">0</td>`;
+            html += '</tr>';
+
+            html += '</thead>';
+            table.innerHTML = html;
+
+            updateTotals();
+        }
+
+        function handleKeyUp(event, holeIndex) {
+            if (event.key === 'Enter' || event.key === 'Tab') {
+                if (holeIndex < 17) {
+                    document.getElementById(`score-${holeIndex + 1}`).focus();
+                }
+            }
+            
+            autoSave();
+        }
+
+        function updateTotals() {
+            const scores = [];
+            let outTotal = 0;
+            let inTotal = 0;
+            let outStableford = 0;
+            let inStableford = 0;
+
+            for (let i = 0; i < 18; i++) {
+                const input = document.getElementById(`score-${i}`);
+                const score = parseInt(input.value) || null;
+                scores[i] = score;
+
+                const hole = tournamentData.course.holes[i];
+                const strokesReceived = getTeamStrokesReceived(currentTeam.teamHandicap, hole.strokeIndex);
+                
+                if (score && score > 0) {
+                    const netScore = score - strokesReceived;
+                    const points = getStablefordPoints(netScore, hole.par);
+                    
+                    document.getElementById(`stableford-${i}`).textContent = points;
+                    
+                    if (i < 9) {
+                        outTotal += score;
+                        outStableford += points;
+                    } else {
+                        inTotal += score;
+                        inStableford += points;
+                    }
+                } else {
+                    document.getElementById(`stableford-${i}`).textContent = '-';
+                }
+            }
+
+            document.getElementById('out-total').innerHTML = `<strong>${outTotal}</strong>`;
+            document.getElementById('in-total').innerHTML = `<strong>${inTotal}</strong>`;
+            document.getElementById('grand-total').textContent = outTotal + inTotal;
+
+            document.getElementById('out-stableford').innerHTML = `<strong>${outStableford}</strong>`;
+            document.getElementById('in-stableford').innerHTML = `<strong>${inStableford}</strong>`;
+            document.getElementById('total-stableford').textContent = outStableford + inStableford;
+
+            ambroseScores[currentRound][currentTeam.teamIndex] = scores;
+        }
+
+        function getTeamStrokesReceived(teamHandicap, strokeIndex) {
+            if (teamHandicap <= 0) return 0;
+            if (teamHandicap >= strokeIndex) {
+                return Math.floor(teamHandicap / 18) + 1;
+            } else if (teamHandicap >= strokeIndex - 18) {
+                return 1;
+            }
+            return 0;
+        }
+
+        function getStablefordPoints(netScore, par) {
+            if (!netScore || netScore <= 0) return 0;
+            const relative = netScore - par;
+            if (relative <= -2) return 4;
+            if (relative === -1) return 3;
+            if (relative === 0) return 2;
+            if (relative === 1) return 1;
+            return 0;
+        }
+
+        function autoSave() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                saveScores(true);
+            }, 500);
+        }
+
+        function saveScores(silent = false) {
+            localStorage.setItem('ambroseScores', JSON.stringify(ambroseScores));
+            
+            if (!silent) {
+                alert('Scorecard saved successfully!');
+            } else {
+                const indicator = document.getElementById('save-indicator');
+                indicator.classList.add('show');
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                }, 2000);
+            }
+        }
+
+        function logout() {
+            if (confirm('Return to team selection? Scores are auto-saved.')) {
+                document.getElementById('selection-section').style.display = 'block';
+                document.getElementById('scoring-section').style.display = 'none';
+                currentRound = null;
+                currentTeam = null;
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

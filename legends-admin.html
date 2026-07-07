@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legends Golf - Cloud Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --orange: #F7931A; --dark: #1a1a1a; --green: #28a745; --red: #dc3545; --amber: #ffc107; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        .header {
+            background: var(--orange);
+            color: var(--dark);
+            padding: 22px;
+            border-radius: 14px;
+            margin-bottom: 18px;
+        }
+        .header h1 { font-size: 26px; }
+        .header p { margin-top: 4px; font-weight: 600; }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 18px;
+        }
+        .card h2 { color: var(--dark); font-size: 20px; margin-bottom: 6px; }
+        .card .sub { color: #777; font-size: 14px; margin-bottom: 16px; }
+
+        .btn {
+            background: var(--orange);
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin: 4px 6px 4px 0;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn.dark { background: var(--dark); }
+        .btn.green { background: var(--green); }
+        .btn.small { padding: 7px 14px; font-size: 13px; }
+
+        .msg { padding: 12px 15px; border-radius: 8px; font-size: 14px; margin: 10px 0; }
+        .msg.ok { background: #d4edda; color: #155724; }
+        .msg.warn { background: #fff3cd; color: #856404; }
+        .msg.err { background: #f8d7da; color: #721c24; }
+        .msg.info { background: #d1ecf1; color: #0c5460; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align: left; font-size: 14px; }
+        th { background: #f5f5f5; }
+
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+        .badge.match { background: #d4edda; color: #155724; }
+        .badge.mismatch { background: #f8d7da; color: #721c24; }
+        .badge.single { background: #fff3cd; color: #856404; }
+        .badge.imported { background: var(--dark); color: var(--orange); }
+
+        .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .switch { position: relative; width: 54px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; inset: 0; background: #ccc; border-radius: 28px; cursor: pointer; transition: .3s; }
+        .slider:before { content: ""; position: absolute; height: 20px; width: 20px; left: 4px; bottom: 4px; background: white; border-radius: 50%; transition: .3s; }
+        input:checked + .slider { background: var(--green); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        select { padding: 8px 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .detail { font-size: 12px; color: #888; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⛳ Legends Golf — Cloud Admin</h1>
+            <p>Publish the tournament, watch scores arrive live, import into your leaderboards</p>
+        </div>
+
+        <!-- STEP 1: PUBLISH -->
+        <div class="card">
+            <h2>Step 1 — Publish Tournament to Cloud</h2>
+            <p class="sub">Sends your players, course and rounds to the cloud so the player app can see them. Do this after any change in the main Admin Panel (new player, round opened/closed, notice posted).</p>
+            <div id="publishInfo" class="msg info">Checking local tournament data…</div>
+            <button class="btn green" onclick="publishSetup()">☁️ Publish to Cloud</button>
+        </div>
+
+        <!-- STEP 2: PLAYER VISIBILITY -->
+        <div class="card">
+            <h2>Step 2 — Player Live Leaderboard</h2>
+            <p class="sub">When ON, players can see the live net Stableford leaderboard in their app. Turn OFF to keep results secret for the presentation. (Takes effect on players' phones within seconds.)</p>
+            <div class="toggle-row">
+                <div><strong>Live Leaderboard in Player App</strong></div>
+                <label class="switch">
+                    <input type="checkbox" id="lbToggle" onchange="toggleLeaderboard()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- STEP 3: LIVE SCORES -->
+        <div class="card">
+            <h2>Step 3 — Live Incoming Scores</h2>
+            <p class="sub">Updates automatically as players enter scores on the course. ✓ Match means the player's own card and their marker's card agree.</p>
+            <label style="font-weight:600; margin-right:8px;">Round:</label>
+            <select id="roundFilter" onchange="renderMonitor()"></select>
+            <div id="monitor"><div class="msg info">Waiting for scores…</div></div>
+        </div>
+
+        <!-- STEP 4: IMPORT -->
+        <div class="card">
+            <h2>Step 4 — Import into Your Tournament System</h2>
+            <p class="sub">Pulls all matched scorecards into this laptop's tournament data. After importing, ALL your existing pages work as normal — Stableford, Skins, Eclectic, Presentation, everything.</p>
+            <button class="btn green" onclick="importMatched()">⬇️ Import All Matched Scorecards</button>
+            <div id="importResult"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBwxX5gwNp9bK4UWHpXsr3IZyvqspYRcvw",
+            authDomain: "legends-golf.firebaseapp.com",
+            projectId: "legends-golf",
+            storageBucket: "legends-golf.firebasestorage.app",
+            messagingSenderId: "562122549024",
+            appId: "1:562122549024:web:5c8d04bc53fd1995831945"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const TOURN = db.collection('tournaments').doc('legends-golf');
+        const SCORES = TOURN.collection('scores');
+
+        let entries = [];       // all score documents from cloud
+        let cloudSetup = null;
+
+        // ===== Local tournament data check =====
+        function localData() {
+            const s = localStorage.getItem('golfTournamentData');
+            return s ? JSON.parse(s) : null;
+        }
+
+        function refreshPublishInfo() {
+            const t = localData();
+            const el = document.getElementById('publishInfo');
+            if (!t || !t.players || t.players.length === 0) {
+                el.className = 'msg warn';
+                el.innerHTML = '⚠️ No tournament found on this computer yet. Open <strong>golf-tournament-admin.html</strong> first and set up your players, course and rounds — then come back and publish.';
+            } else {
+                el.className = 'msg ok';
+                el.innerHTML = '✓ Ready to publish: <strong>' + t.players.length + ' players</strong>, <strong>' + t.rounds.length + ' round(s)</strong>' +
+                    (t.tournament && t.tournament.name ? ' — "' + t.tournament.name + '"' : '');
+            }
+        }
+
+        // ===== Publish =====
+        function publishSetup() {
+            const t = localData();
+            if (!t || !t.players || t.players.length === 0) {
+                alert('Set up the tournament in golf-tournament-admin.html first.');
+                return;
+            }
+            const c = JSON.parse(localStorage.getItem('adminControls') || '{}');
+
+            const setup = {
+                tournament: { name: (t.tournament && t.tournament.name) || 'Legends Golf' },
+                players: t.players.map(function(p){ return { id: p.id, name: p.name, playingHandicap: p.playingHandicap }; }),
+                course: { holes: t.course.holes.map(function(h){ return { par: h.par, strokeIndex: h.strokeIndex }; }) },
+                rounds: t.rounds.map(function(r){ return { number: r.number }; }),
+                roundStatus: (c.days && c.days.dayStatus) || { 0: 'open' },
+                controls: {
+                    liveLeaderboard: !!(c.visibility && c.visibility.liveLeaderboard),
+                    notices: (c.notices || []).map(function(n){ return { title: n.title, message: n.message }; })
+                },
+                publishedAt: Date.now()
+            };
+
+            TOURN.set(setup).then(function() {
+                alert('✅ Published! Players\' apps now have the latest players, rounds and notices.');
+            }).catch(function(e) {
+                alert('❌ Publish failed: ' + e.message + '\n\nCheck your internet connection and that the Firestore database has been created.');
+            });
+        }
+
+        // ===== Leaderboard toggle (writes straight to cloud) =====
+        function toggleLeaderboard() {
+            const on = document.getElementById('lbToggle').checked;
+            TOURN.set({ controls: { liveLeaderboard: on } }, { merge: true });
+            // keep local adminControls in step too
+            const c = JSON.parse(localStorage.getItem('adminControls') || '{}');
+            c.visibility = c.visibility || {};
+            c.visibility.liveLeaderboard = on;
+            localStorage.setItem('adminControls', JSON.stringify(c));
+        }
+
+        // ===== Live monitor =====
+        TOURN.onSnapshot(function(doc) {
+            if (doc.exists) {
+                cloudSetup = doc.data();
+                document.getElementById('lbToggle').checked = !!(cloudSetup.controls && cloudSetup.controls.liveLeaderboard);
+                fillRoundFilter();
+            }
+        });
+
+        SCORES.onSnapshot(function(snap) {
+            entries = [];
+            snap.forEach(function(d){ entries.push(d.data()); });
+            renderMonitor();
+        }, function(e) {
+            document.getElementById('monitor').innerHTML =
+                '<div class="msg err">Cannot reach the cloud database. Has the Firestore database been created yet? (' + e.message + ')</div>';
+        });
+
+        function fillRoundFilter() {
+            const sel = document.getElementById('roundFilter');
+            const current = sel.value;
+            sel.innerHTML = '';
+            const rounds = (cloudSetup && cloudSetup.rounds) || [{ number: 1 }];
+            rounds.forEach(function(r, i) {
+                sel.innerHTML += '<option value="' + i + '">Round ' + r.number + '</option>';
+            });
+            if (current) sel.value = current;
+        }
+
+        function scoresEqual(a, b) {
+            if (!a || !b) return false;
+            for (let i = 0; i < 18; i++) {
+                if ((a[i] || null) !== (b[i] || null)) return false;
+            }
+            return true;
+        }
+
+        function pairsForRound(r) {
+            // subjectId -> { self: entry, marker: entry }
+            const map = {};
+            entries.filter(function(e){ return e.round === r; }).forEach(function(e) {
+                map[e.subjectId] = map[e.subjectId] || {};
+                if (e.enteredById === e.subjectId) map[e.subjectId].self = e;
+                else map[e.subjectId].marker = e;
+            });
+            return map;
+        }
+
+        function renderMonitor() {
+            const box = document.getElementById('monitor');
+            const r = parseInt(document.getElementById('roundFilter').value || '0');
+            const pairs = pairsForRound(r);
+            const ids = Object.keys(pairs);
+
+            if (ids.length === 0) {
+                box.innerHTML = '<div class="msg info">No scores in yet for this round. They\'ll appear here automatically.</div>';
+                return;
+            }
+
+            const t = localData();
+            const imported = (t && t.rounds[r] && t.rounds[r].scores) || {};
+
+            let html = '<table><tr><th>Player</th><th>Holes In</th><th>Own Card</th><th>Marker\'s Card</th><th>Status</th></tr>';
+            ids.forEach(function(id) {
+                const p = pairs[id];
+                const name = (p.self && p.self.subjectName) || (p.marker && p.marker.subjectName) || ('Player ' + id);
+                const selfHoles = p.self ? p.self.scores.filter(Boolean).length : 0;
+                const markHoles = p.marker ? p.marker.scores.filter(Boolean).length : 0;
+
+                let status;
+                if (imported[id]) status = '<span class="badge imported">IMPORTED</span>';
+                else if (p.self && p.marker && scoresEqual(p.self.scores, p.marker.scores)) status = '<span class="badge match">✓ MATCH</span>';
+                else if (p.self && p.marker) status = '<span class="badge mismatch">✗ MISMATCH</span>';
+                else status = '<span class="badge single">⏳ Waiting for ' + (p.self ? 'marker' : 'player') + '</span>';
+
+                html += '<tr><td><strong>' + name + '</strong>' +
+                        (p.self && p.self.complete ? ' <span class="detail">✔ submitted</span>' : '') +
+                        '</td><td>' + Math.max(selfHoles, markHoles) + '/18</td>' +
+                        '<td>' + (p.self ? total(p.self.scores) + ' strokes' : '—') + '</td>' +
+                        '<td>' + (p.marker ? total(p.marker.scores) + ' strokes (by ' + p.marker.enteredByName + ')' : '—') + '</td>' +
+                        '<td>' + status + '</td></tr>';
+            });
+            html += '</table>';
+            box.innerHTML = html;
+        }
+
+        function total(s) { return s.reduce(function(a, b){ return a + (b || 0); }, 0); }
+
+        // ===== Import matched scores into localStorage =====
+        function importMatched() {
+            const t = localData();
+            const out = document.getElementById('importResult');
+            if (!t) {
+                out.innerHTML = '<div class="msg err">No tournament on this computer. Set it up in golf-tournament-admin.html first, then publish, then import.</div>';
+                return;
+            }
+
+            const r = parseInt(document.getElementById('roundFilter').value || '0');
+            if (!t.rounds[r]) {
+                out.innerHTML = '<div class="msg err">Round ' + (r+1) + ' doesn\'t exist in your local tournament. Add it in the Admin Panel first.</div>';
+                return;
+            }
+            t.rounds[r].scores = t.rounds[r].scores || {};
+
+            const pairs = pairsForRound(r);
+            let ok = 0, skipped = [];
+
+            Object.keys(pairs).forEach(function(id) {
+                const p = pairs[id];
+                if (p.self && p.marker && scoresEqual(p.self.scores, p.marker.scores)) {
+                    t.rounds[r].scores[id] = p.self.scores.slice();
+                    ok++;
+                } else {
+                    const name = (p.self && p.self.subjectName) || (p.marker && p.marker.subjectName) || id;
+                    skipped.push(name);
+                }
+            });
+
+            localStorage.setItem('golfTournamentData', JSON.stringify(t));
+
+            let html = '<div class="msg ok">✅ Imported ' + ok + ' matched scorecard(s) for Round ' + (r+1) + '. Your leaderboard pages are now up to date.</div>';
+            if (skipped.length) {
+                html += '<div class="msg warn">⚠️ Not imported (mismatch or waiting on second card): ' + skipped.join(', ') +
+                        '. Resolve these with the players, or accept one version manually in the Admin Panel.</div>';
+            }
+            out.innerHTML = html;
+            renderMonitor();
+        }
+
+        refreshPublishInfo();
+    </script>
+</body>
+</html>

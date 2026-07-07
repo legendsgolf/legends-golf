@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Special Prizes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #f5576c;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .tab-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: #e9ecef;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #f5576c;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        input, select {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .btn {
+            background: #f5576c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #e04055;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .prize-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #f5576c;
+        }
+
+        .prize-card h3 {
+            color: #f5576c;
+            margin-bottom: 10px;
+        }
+
+        .winner-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #333;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .distance-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #f5576c;
+            margin: 10px 0;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .handicap-section {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏌️ Special Prizes</h1>
+            <p style="color: #6c757d;">Long Drives & Nearest to Pin</p>
+        </div>
+
+        <div class="card">
+            <div class="tab-group">
+                <button class="tab-btn active" onclick="showTab('longdrive')">Long Drive</button>
+                <button class="tab-btn" onclick="showTab('ntp')">Nearest to Pin</button>
+                <button class="tab-btn" onclick="showTab('results')">View Results</button>
+            </div>
+
+            <!-- Long Drive Entry -->
+            <div id="longdrive-section">
+                <h2 style="color: #f5576c; margin-bottom: 20px;">Long Drive Entry</h2>
+                
+                <div class="form-group">
+                    <label for="ld-round-select">Select Round:</label>
+                    <select id="ld-round-select" style="max-width: 300px;">
+                        <option value="">-- Select Round --</option>
+                    </select>
+                </div>
+
+                <div class="handicap-section">
+                    <strong>Long Drive Categories:</strong>
+                    <p style="margin-top: 5px;">2 prizes per round - Above handicap cutoff & Below handicap cutoff</p>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label for="ld-handicap-cutoff">Handicap Cutoff:</label>
+                        <input type="number" id="ld-handicap-cutoff" value="18" min="0" max="54" style="max-width: 150px;">
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 30px; margin-bottom: 15px;">Enter Long Drive Winners</h3>
+                
+                <div class="form-grid">
+                    <div>
+                        <h4 style="margin-bottom: 10px;">Below Handicap Cutoff</h4>
+                        <div class="form-group">
+                            <label>Player:</label>
+                            <select id="ld-below-player"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Hole Number:</label>
+                            <input type="number" id="ld-below-hole" min="1" max="18">
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 style="margin-bottom: 10px;">Above Handicap Cutoff</h4>
+                        <div class="form-group">
+                            <label>Player:</label>
+                            <select id="ld-above-player"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Hole Number:</label>
+                            <input type="number" id="ld-above-hole" min="1" max="18">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="saveLongDrive()">Save Long Drive Winners</button>
+            </div>
+
+            <!-- Nearest to Pin Entry -->
+            <div id="ntp-section" style="display: none;">
+                <h2 style="color: #f5576c; margin-bottom: 20px;">Nearest to Pin Entry</h2>
+                
+                <div class="form-group">
+                    <label for="ntp-round-select">Select Round:</label>
+                    <select id="ntp-round-select" style="max-width: 300px;">
+                        <option value="">-- Select Round --</option>
+                    </select>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Par 3 Holes:</strong> Select up to 5 par 3 holes for NTP competitions this round
+                </div>
+
+                <div id="ntp-entries-container"></div>
+
+                <button class="btn" onclick="addNTPEntry()" style="margin-top: 20px;">+ Add NTP Hole</button>
+                <button class="btn" onclick="saveNTPWinners()" style="margin-left: 10px;">Save All NTP Winners</button>
+            </div>
+
+            <!-- Results View -->
+            <div id="results-section" style="display: none;">
+                <h2 style="color: #f5576c; margin-bottom: 20px;">Special Prizes Results</h2>
+                
+                <div class="form-group">
+                    <label for="results-round-select">Select Round:</label>
+                    <select id="results-round-select" onchange="loadResults()" style="max-width: 300px;">
+                        <option value="">-- Select Round --</option>
+                    </select>
+                </div>
+
+                <div id="results-display"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tournamentData = null;
+        let specialPrizes = {}; // { roundIndex: { longDrive: {...}, ntp: [...] } }
+        let currentTab = 'longdrive';
+
+        function init() {
+            loadData();
+            populateRoundSelects();
+            populatePlayerSelects();
+            loadSpecialPrizes();
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('golfTournamentData');
+            if (saved) {
+                tournamentData = JSON.parse(saved);
+            }
+            
+            const prizesSaved = localStorage.getItem('golfSpecialPrizes');
+            if (prizesSaved) {
+                specialPrizes = JSON.parse(prizesSaved);
+            }
+        }
+
+        function saveSpecialPrizes() {
+            localStorage.setItem('golfSpecialPrizes', JSON.stringify(specialPrizes));
+        }
+
+        function populateRoundSelects() {
+            ['ld-round-select', 'ntp-round-select', 'results-round-select'].forEach(id => {
+                const select = document.getElementById(id);
+                select.innerHTML = '<option value="">-- Select Round --</option>';
+                
+                if (tournamentData && tournamentData.rounds) {
+                    tournamentData.rounds.forEach((round, index) => {
+                        const option = document.createElement('option');
+                        option.value = index;
+                        option.textContent = `Round ${round.number}`;
+                        select.appendChild(option);
+                    });
+                }
+            });
+        }
+
+        function populatePlayerSelects() {
+            ['ld-below-player', 'ld-above-player'].forEach(id => {
+                const select = document.getElementById(id);
+                select.innerHTML = '<option value="">-- Select Player --</option>';
+                
+                if (tournamentData && tournamentData.players) {
+                    tournamentData.players.forEach(player => {
+                        const option = document.createElement('option');
+                        option.value = player.id;
+                        option.textContent = `${player.name} (HCP ${player.playingHandicap})`;
+                        select.appendChild(option);
+                    });
+                }
+            });
+        }
+
+        function showTab(tab) {
+            currentTab = tab;
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('longdrive-section').style.display = tab === 'longdrive' ? 'block' : 'none';
+            document.getElementById('ntp-section').style.display = tab === 'ntp' ? 'block' : 'none';
+            document.getElementById('results-section').style.display = tab === 'results' ? 'block' : 'none';
+        }
+
+        function saveLongDrive() {
+            const roundIndex = parseInt(document.getElementById('ld-round-select').value);
+            
+            if (isNaN(roundIndex)) {
+                alert('Please select a round');
+                return;
+            }
+            
+            const handicapCutoff = parseInt(document.getElementById('ld-handicap-cutoff').value);
+            const belowPlayerId = parseInt(document.getElementById('ld-below-player').value);
+            const belowHole = parseInt(document.getElementById('ld-below-hole').value);
+            const abovePlayerId = parseInt(document.getElementById('ld-above-player').value);
+            const aboveHole = parseInt(document.getElementById('ld-above-hole').value);
+            
+            if (!specialPrizes[roundIndex]) {
+                specialPrizes[roundIndex] = {};
+            }
+            
+            specialPrizes[roundIndex].longDrive = {
+                handicapCutoff: handicapCutoff,
+                below: belowPlayerId ? {
+                    playerId: belowPlayerId,
+                    playerName: tournamentData.players.find(p => p.id === belowPlayerId).name,
+                    hole: belowHole
+                } : null,
+                above: abovePlayerId ? {
+                    playerId: abovePlayerId,
+                    playerName: tournamentData.players.find(p => p.id === abovePlayerId).name,
+                    hole: aboveHole
+                } : null
+            };
+            
+            saveSpecialPrizes();
+            alert('Long drive winners saved!');
+        }
+
+        let ntpEntryCount = 0;
+
+        function addNTPEntry() {
+            const roundIndex = parseInt(document.getElementById('ntp-round-select').value);
+            
+            if (isNaN(roundIndex)) {
+                alert('Please select a round first');
+                return;
+            }
+            
+            const container = document.getElementById('ntp-entries-container');
+            const entryId = ntpEntryCount++;
+            
+            const div = document.createElement('div');
+            div.className = 'prize-card';
+            div.id = `ntp-entry-${entryId}`;
+            div.innerHTML = `
+                <h3>NTP Entry ${entryId + 1}</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Hole Number (Par 3):</label>
+                        <input type="number" id="ntp-hole-${entryId}" min="1" max="18">
+                    </div>
+                    <div class="form-group">
+                        <label>Winner:</label>
+                        <select id="ntp-player-${entryId}">
+                            <option value="">-- Select Player --</option>
+                            ${tournamentData.players.map(p => 
+                                `<option value="${p.id}">${p.name}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Distance (meters):</label>
+                        <input type="number" id="ntp-distance-${entryId}" step="0.01" placeholder="e.g., 2.5">
+                    </div>
+                </div>
+                <button class="btn btn-secondary btn-small" onclick="removeNTPEntry(${entryId})" style="padding: 8px 16px; font-size: 14px;">Remove</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function removeNTPEntry(entryId) {
+            document.getElementById(`ntp-entry-${entryId}`).remove();
+        }
+
+        function saveNTPWinners() {
+            const roundIndex = parseInt(document.getElementById('ntp-round-select').value);
+            
+            if (isNaN(roundIndex)) {
+                alert('Please select a round');
+                return;
+            }
+            
+            const ntpEntries = [];
+            const container = document.getElementById('ntp-entries-container');
+            
+            container.querySelectorAll('.prize-card').forEach(card => {
+                const entryId = card.id.split('-')[2];
+                const hole = parseInt(document.getElementById(`ntp-hole-${entryId}`).value);
+                const playerId = parseInt(document.getElementById(`ntp-player-${entryId}`).value);
+                const distance = parseFloat(document.getElementById(`ntp-distance-${entryId}`).value);
+                
+                if (hole && playerId) {
+                    ntpEntries.push({
+                        hole: hole,
+                        playerId: playerId,
+                        playerName: tournamentData.players.find(p => p.id === playerId).name,
+                        distance: distance || null
+                    });
+                }
+            });
+            
+            if (!specialPrizes[roundIndex]) {
+                specialPrizes[roundIndex] = {};
+            }
+            
+            specialPrizes[roundIndex].ntp = ntpEntries;
+            
+            saveSpecialPrizes();
+            alert(`Saved ${ntpEntries.length} NTP winner(s)!`);
+        }
+
+        function loadResults() {
+            const roundIndex = parseInt(document.getElementById('results-round-select').value);
+            const display = document.getElementById('results-display');
+            
+            if (isNaN(roundIndex)) {
+                display.innerHTML = '';
+                return;
+            }
+            
+            const prizes = specialPrizes[roundIndex];
+            
+            if (!prizes) {
+                display.innerHTML = '<p style="color: #6c757d;">No special prizes recorded for this round yet.</p>';
+                return;
+            }
+            
+            let html = '';
+            
+            // Long Drive
+            if (prizes.longDrive) {
+                html += '<div class="prize-card">';
+                html += '<h3>🏌️ Long Drive Winners</h3>';
+                html += `<p style="color: #666; margin-bottom: 15px;">Handicap Cutoff: ${prizes.longDrive.handicapCutoff}</p>`;
+                
+                if (prizes.longDrive.below) {
+                    html += '<div style="margin: 10px 0;">';
+                    html += '<strong>Below Handicap:</strong><br>';
+                    html += `<span class="winner-badge">${prizes.longDrive.below.playerName}</span>`;
+                    html += `<div>Hole ${prizes.longDrive.below.hole}</div>`;
+                    html += '</div>';
+                }
+                
+                if (prizes.longDrive.above) {
+                    html += '<div style="margin: 10px 0;">';
+                    html += '<strong>Above Handicap:</strong><br>';
+                    html += `<span class="winner-badge">${prizes.longDrive.above.playerName}</span>`;
+                    html += `<div>Hole ${prizes.longDrive.above.hole}</div>`;
+                    html += '</div>';
+                }
+                
+                html += '</div>';
+            }
+            
+            // NTP
+            if (prizes.ntp && prizes.ntp.length > 0) {
+                html += '<div class="prize-card">';
+                html += '<h3>🎯 Nearest to Pin Winners</h3>';
+                
+                prizes.ntp.forEach(ntp => {
+                    html += '<div style="margin: 15px 0; padding: 15px; background: white; border-radius: 8px;">';
+                    html += `<strong>Hole ${ntp.hole}</strong><br>`;
+                    html += `<span class="winner-badge">${ntp.playerName}</span>`;
+                    if (ntp.distance) {
+                        html += `<div class="distance-display">${ntp.distance}m</div>`;
+                    }
+                    html += '</div>';
+                });
+                
+                html += '</div>';
+            }
+            
+            display.innerHTML = html;
+        }
+
+        function loadSpecialPrizes() {
+            // Initialize NTP entries container
+            document.getElementById('ntp-entries-container').innerHTML = '';
+        }
+
+        init();
+    </script>
+</body>
+</html>

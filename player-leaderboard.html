@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Leaderboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .leaderboard-table th,
+        .leaderboard-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .leaderboard-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .leaderboard-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .pos-1 {
+            background: #ffd70033 !important;
+            font-weight: bold;
+        }
+
+        .pos-2 {
+            background: #c0c0c033 !important;
+        }
+
+        .pos-3 {
+            background: #cd7f3233 !important;
+        }
+
+        .alert {
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffc107;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #17a2b8;
+        }
+
+        .refresh-notice {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #0c5460;
+        }
+
+        .last-update {
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        select {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            min-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Live Leaderboard</h1>
+            <p style="color: #6c757d;">Current Net Stableford Standings</p>
+        </div>
+
+        <div id="content-area"></div>
+    </div>
+
+    <script>
+        let tournamentData = null;
+        let adminControls = null;
+
+        function init() {
+            loadData();
+            checkPermissionAndDisplay();
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('golfTournamentData');
+            if (saved) {
+                tournamentData = JSON.parse(saved);
+            }
+
+            const controlsSaved = localStorage.getItem('adminControls');
+            if (controlsSaved) {
+                adminControls = JSON.parse(controlsSaved);
+            }
+        }
+
+        function checkPermissionAndDisplay() {
+            const container = document.getElementById('content-area');
+
+            // Check if admin has enabled live leaderboard
+            if (!adminControls || !adminControls.visibility.liveLeaderboard) {
+                container.innerHTML = `
+                    <div class="alert alert-warning">
+                        <h2 style="margin-bottom: 15px;">🔒 Leaderboard Not Available</h2>
+                        <p>The live leaderboard is currently disabled by the tournament administrator.</p>
+                        <p style="margin-top: 10px;">Check back later or contact the organizer.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Check if tournament exists
+            if (!tournamentData || !tournamentData.rounds || tournamentData.rounds.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info">
+                        <h2 style="margin-bottom: 15px;">📋 No Data Yet</h2>
+                        <p>No tournament data available. Scores will appear here once play begins.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Find open days
+            const openDays = [];
+            if (adminControls && adminControls.days && adminControls.days.dayStatus) {
+                Object.keys(adminControls.days.dayStatus).forEach(dayIndex => {
+                    if (adminControls.days.dayStatus[dayIndex] === 'open') {
+                        openDays.push(parseInt(dayIndex));
+                    }
+                });
+            }
+
+            // If no open days, show most recent
+            let dayToShow = openDays.length > 0 ? openDays[openDays.length - 1] : tournamentData.rounds.length - 1;
+
+            displayLeaderboard(dayToShow);
+        }
+
+        function displayLeaderboard(dayIndex) {
+            const container = document.getElementById('content-area');
+            const round = tournamentData.rounds[dayIndex];
+
+            if (!round.scores || Object.keys(round.scores).length === 0) {
+                container.innerHTML = `
+                    <div class="card">
+                        <div class="alert alert-info">
+                            <p>No scores entered yet for Day ${dayIndex + 1}.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Day selector
+            let html = '<div class="card">';
+            html += '<div class="form-group">';
+            html += '<label style="font-weight: 600; margin-bottom: 10px; display: block;">Select Day:</label>';
+            html += '<select id="day-select" onchange="changeDay()">';
+            
+            tournamentData.rounds.forEach((r, idx) => {
+                html += `<option value="${idx}" ${idx === dayIndex ? 'selected' : ''}>Day ${idx + 1}</option>`;
+            });
+            
+            html += '</select></div>';
+
+            html += '<div class="refresh-notice">🔄 Refresh this page to see latest scores</div>';
+
+            // Calculate leaderboard
+            const results = calculateDayLeaderboard(dayIndex);
+
+            if (results.length === 0) {
+                html += '<div class="alert alert-info"><p>No scores available yet.</p></div>';
+            } else {
+                html += '<table class="leaderboard-table"><thead><tr>';
+                html += '<th>Pos</th><th>Player</th><th>HCP</th><th>Points</th>';
+                html += '</tr></thead><tbody>';
+
+                results.forEach((player, index) => {
+                    const rowClass = index === 0 ? 'pos-1' : index === 1 ? 'pos-2' : index === 2 ? 'pos-3' : '';
+                    html += `<tr class="${rowClass}">`;
+                    html += `<td>${index + 1}</td>`;
+                    html += `<td><strong>${player.playerName}</strong></td>`;
+                    html += `<td>${player.playingHandicap}</td>`;
+                    html += `<td><strong>${player.totalPoints}</strong></td>`;
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table>';
+                
+                const now = new Date();
+                html += `<div class="last-update">Last updated: ${now.toLocaleTimeString()}</div>`;
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function changeDay() {
+            const dayIndex = parseInt(document.getElementById('day-select').value);
+            displayLeaderboard(dayIndex);
+        }
+
+        function calculateDayLeaderboard(dayIndex) {
+            const results = [];
+            const round = tournamentData.rounds[dayIndex];
+
+            tournamentData.players.forEach(player => {
+                if (round.scores && round.scores[player.id]) {
+                    const result = calculatePlayerDay(player.id, dayIndex);
+                    if (result) results.push(result);
+                }
+            });
+
+            results.sort((a, b) => b.totalPoints - a.totalPoints);
+            return results;
+        }
+
+        function calculatePlayerDay(playerId, dayIndex) {
+            const player = tournamentData.players.find(p => p.id === playerId);
+            const round = tournamentData.rounds[dayIndex];
+            const scores = round.scores[playerId];
+
+            let totalPoints = 0;
+
+            for (let i = 0; i < 18; i++) {
+                const hole = tournamentData.course.holes[i];
+                const grossScore = scores[i];
+
+                if (grossScore && grossScore > 0) {
+                    const strokes = getStrokesReceived(player.playingHandicap, hole.strokeIndex);
+                    const netScore = grossScore - strokes;
+                    totalPoints += getStablefordPoints(netScore, hole.par);
+                }
+            }
+
+            return {
+                playerId: playerId,
+                playerName: player.name,
+                playingHandicap: player.playingHandicap,
+                totalPoints: totalPoints
+            };
+        }
+
+        function getStrokesReceived(playingHandicap, strokeIndex) {
+            if (playingHandicap <= 0) return 0;
+            if (playingHandicap >= strokeIndex) {
+                return Math.floor(playingHandicap / 18) + 1;
+            } else if (playingHandicap >= strokeIndex - 18) {
+                return 1;
+            }
+            return 0;
+        }
+
+        function getStablefordPoints(netScore, par) {
+            if (!netScore || netScore <= 0) return 0;
+            const relative = netScore - par;
+            if (relative <= -2) return 4;
+            if (relative === -1) return 3;
+            if (relative === 0) return 2;
+            if (relative === 1) return 1;
+            return 0;
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stableford Leaderboards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #1e3c72;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .tab-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: #e9ecef;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #2a5298;
+            color: white;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .leaderboard-table th,
+        .leaderboard-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .leaderboard-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .leaderboard-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .pos-1 {
+            background: #ffd70033 !important;
+            font-weight: bold;
+        }
+
+        .pos-2 {
+            background: #c0c0c033 !important;
+        }
+
+        .pos-3 {
+            background: #cd7f3233 !important;
+        }
+
+        .countback-badge {
+            display: inline-block;
+            background: #fff3cd;
+            color: #856404;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-left: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        select {
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .scorecard-detail {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏆 Stableford Leaderboards</h1>
+            <p style="color: #6c757d;">View Gross and Net Stableford results with countback</p>
+        </div>
+
+        <div class="card">
+            <div class="tab-group">
+                <button class="tab-btn active" onclick="showView('daily-net')">Daily - Net Stableford</button>
+                <button class="tab-btn" onclick="showView('daily-gross')">Daily - Gross Stableford</button>
+                <button class="tab-btn" onclick="showView('overall-net')">Overall - Net Stableford</button>
+                <button class="tab-btn" onclick="showView('overall-gross')">Overall - Gross Stableford</button>
+            </div>
+
+            <div id="daily-controls">
+                <div class="form-group" style="max-width: 300px;">
+                    <label for="roundSelect">Select Round:</label>
+                    <select id="roundSelect" onchange="updateLeaderboard()">
+                        <option value="">-- Select Round --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="leaderboard-container">
+                <p style="color: #6c757d;">Select a round to view leaderboard</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tournamentData = null;
+        let currentView = 'daily-net';
+        let selectedRound = null;
+
+        // Load tournament data
+        function loadData() {
+            const saved = localStorage.getItem('golfTournamentData');
+            if (saved) {
+                tournamentData = JSON.parse(saved);
+                populateRoundSelect();
+                
+                if (tournamentData.rounds.length > 0) {
+                    selectedRound = 0;
+                    document.getElementById('roundSelect').value = 0;
+                    updateLeaderboard();
+                }
+            } else {
+                document.getElementById('leaderboard-container').innerHTML = 
+                    '<div class="alert alert-info">No tournament data found. Please set up your tournament first.</div>';
+            }
+        }
+
+        function populateRoundSelect() {
+            const select = document.getElementById('roundSelect');
+            select.innerHTML = '<option value="">-- Select Round --</option>';
+            
+            tournamentData.rounds.forEach((round, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `Round ${round.number}${round.date ? ' - ' + round.date : ''}`;
+                select.appendChild(option);
+            });
+        }
+
+        function showView(view) {
+            currentView = view;
+            
+            // Update buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Show/hide round selector
+            const dailyControls = document.getElementById('daily-controls');
+            if (view.startsWith('daily')) {
+                dailyControls.style.display = 'block';
+            } else {
+                dailyControls.style.display = 'none';
+            }
+            
+            updateLeaderboard();
+        }
+
+        function updateLeaderboard() {
+            if (!tournamentData) return;
+            
+            const roundIndex = parseInt(document.getElementById('roundSelect').value);
+            
+            if (currentView.startsWith('daily')) {
+                if (isNaN(roundIndex)) {
+                    document.getElementById('leaderboard-container').innerHTML = 
+                        '<p style="color: #6c757d;">Select a round to view leaderboard</p>';
+                    return;
+                }
+                selectedRound = roundIndex;
+                const useNet = currentView === 'daily-net';
+                displayDailyLeaderboard(roundIndex, useNet);
+            } else {
+                const useNet = currentView === 'overall-net';
+                displayOverallLeaderboard(useNet);
+            }
+        }
+
+        function displayDailyLeaderboard(roundIndex, useNet) {
+            const results = calculateRoundLeaderboard(roundIndex, useNet);
+            renderLeaderboard(results, useNet, `Round ${tournamentData.rounds[roundIndex].number}`);
+        }
+
+        function displayOverallLeaderboard(useNet) {
+            const results = calculateOverallLeaderboard(useNet);
+            renderLeaderboard(results, useNet, 'Overall Tournament');
+        }
+
+        function renderLeaderboard(results, useNet, title) {
+            const container = document.getElementById('leaderboard-container');
+            
+            let html = `<h2>${title} - ${useNet ? 'Net' : 'Gross'} Stableford</h2>`;
+            html += '<div style="overflow-x: auto;"><table class="leaderboard-table">';
+            html += '<thead><tr>';
+            html += '<th>Pos</th>';
+            html += '<th>Player</th>';
+            if (useNet) html += '<th>HCP</th>';
+            html += '<th>Points</th>';
+            html += '<th>Details</th>';
+            html += '</tr></thead><tbody>';
+            
+            results.forEach((result, index) => {
+                const rowClass = result.position === 1 ? 'pos-1' : 
+                                result.position === 2 ? 'pos-2' :
+                                result.position === 3 ? 'pos-3' : '';
+                
+                html += `<tr class="${rowClass}">`;
+                html += `<td>${result.position}</td>`;
+                html += `<td>${result.playerName}${result.countbackUsed ? '<span class="countback-badge">CB</span>' : ''}</td>`;
+                if (useNet) html += `<td>${result.playingHandicap}</td>`;
+                html += `<td><strong>${useNet ? result.totalNetPoints : result.totalGrossPoints}</strong></td>`;
+                
+                // Details
+                if (result.countbackDetail) {
+                    html += `<td class="scorecard-detail">CB: B9=${result.countbackDetail.back9}, B6=${result.countbackDetail.back6}, B3=${result.countbackDetail.back3}, L1=${result.countbackDetail.last1}</td>`;
+                } else {
+                    html += `<td>-</td>`;
+                }
+                
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        // Stableford Calculation Functions
+        function getStrokesReceived(playingHandicap, strokeIndex) {
+            if (playingHandicap <= 0) return 0;
+            if (playingHandicap >= strokeIndex) {
+                return Math.floor(playingHandicap / 18) + 1;
+            } else if (playingHandicap >= strokeIndex - 18) {
+                return 1;
+            }
+            return 0;
+        }
+
+        function getNetScore(grossScore, playingHandicap, strokeIndex) {
+            if (!grossScore || grossScore === 0) return null;
+            const strokes = getStrokesReceived(playingHandicap, strokeIndex);
+            return grossScore - strokes;
+        }
+
+        function getStablefordPoints(score, par) {
+            if (score === null || score === 0) return 0;
+            const relative = score - par;
+            if (relative <= -2) return 4;
+            if (relative === -1) return 3;
+            if (relative === 0) return 2;
+            if (relative === 1) return 1;
+            return 0;
+        }
+
+        function calculatePlayerRound(playerId, roundIndex) {
+            const player = tournamentData.players.find(p => p.id === playerId);
+            if (!player) return null;
+
+            const round = tournamentData.rounds[roundIndex];
+            if (!round.scores || !round.scores[playerId]) return null;
+
+            const scores = round.scores[playerId];
+            let totalGrossPoints = 0;
+            let totalNetPoints = 0;
+            const holeDetails = [];
+
+            for (let i = 0; i < 18; i++) {
+                const hole = tournamentData.course.holes[i];
+                const grossScore = scores[i];
+                
+                const grossPoints = grossScore > 0 ? getStablefordPoints(grossScore, hole.par) : 0;
+                totalGrossPoints += grossPoints;
+
+                const netScore = getNetScore(grossScore, player.playingHandicap, hole.strokeIndex);
+                const netPoints = netScore !== null ? getStablefordPoints(netScore, hole.par) : 0;
+                totalNetPoints += netPoints;
+
+                holeDetails.push({
+                    grossScore, netScore, grossPoints, netPoints,
+                    strokesReceived: getStrokesReceived(player.playingHandicap, hole.strokeIndex)
+                });
+            }
+
+            return {
+                playerId, playerName: player.name,
+                playingHandicap: player.playingHandicap,
+                totalGrossPoints, totalNetPoints, holeDetails
+            };
+        }
+
+        function calculateRoundLeaderboard(roundIndex, useNet) {
+            const results = [];
+            tournamentData.players.forEach(player => {
+                const result = calculatePlayerRound(player.id, roundIndex);
+                if (result) results.push(result);
+            });
+
+            results.sort((a, b) => {
+                const diff = (useNet ? b.totalNetPoints : b.totalGrossPoints) - 
+                             (useNet ? a.totalNetPoints : a.totalGrossPoints);
+                if (diff !== 0) return diff;
+                return doCountback(b, a, useNet);
+            });
+
+            return applyPositions(results, useNet);
+        }
+
+        function calculateOverallLeaderboard(useNet) {
+            const playerTotals = new Map();
+
+            tournamentData.rounds.forEach((round, roundIndex) => {
+                tournamentData.players.forEach(player => {
+                    const result = calculatePlayerRound(player.id, roundIndex);
+                    if (result) {
+                        if (!playerTotals.has(player.id)) {
+                            playerTotals.set(player.id, {
+                                playerId: player.id, playerName: player.name,
+                                playingHandicap: player.playingHandicap,
+                                totalGrossPoints: 0, totalNetPoints: 0, rounds: []
+                            });
+                        }
+                        const total = playerTotals.get(player.id);
+                        total.totalGrossPoints += result.totalGrossPoints;
+                        total.totalNetPoints += result.totalNetPoints;
+                        total.rounds.push(result);
+                    }
+                });
+            });
+
+            const results = Array.from(playerTotals.values());
+            results.sort((a, b) => {
+                const diff = (useNet ? b.totalNetPoints : b.totalGrossPoints) - 
+                             (useNet ? a.totalNetPoints : a.totalGrossPoints);
+                if (diff !== 0) return diff;
+                // Use last round for countback in overall
+                const aLast = a.rounds[a.rounds.length - 1];
+                const bLast = b.rounds[b.rounds.length - 1];
+                return doCountback(bLast, aLast, useNet);
+            });
+
+            return applyPositions(results, useNet);
+        }
+
+        function applyPositions(results, useNet) {
+            let currentPosition = 1;
+            for (let i = 0; i < results.length; i++) {
+                const curr = results[i];
+                const currPoints = useNet ? curr.totalNetPoints : curr.totalGrossPoints;
+                
+                if (i > 0) {
+                    const prev = results[i - 1];
+                    const prevPoints = useNet ? prev.totalNetPoints : prev.totalGrossPoints;
+                    curr.position = currPoints === prevPoints ? prev.position : currentPosition;
+                    
+                    if (currPoints === prevPoints) {
+                        curr.countbackUsed = true;
+                        curr.countbackDetail = getCountbackDetail(curr, useNet);
+                    }
+                } else {
+                    curr.position = 1;
+                }
+                
+                if (i === results.length - 1 || currPoints !== 
+                    (useNet ? results[i+1]?.totalNetPoints : results[i+1]?.totalGrossPoints)) {
+                    currentPosition = i + 2;
+                }
+            }
+            return results;
+        }
+
+        function doCountback(a, b, useNet) {
+            const holesA = a.holeDetails || a.rounds?.[a.rounds.length - 1]?.holeDetails || [];
+            const holesB = b.holeDetails || b.rounds?.[b.rounds.length - 1]?.holeDetails || [];
+            
+            const sumPoints = (holes, start, end) => 
+                holes.slice(start, end).reduce((sum, h) => 
+                    sum + (useNet ? h.netPoints : h.grossPoints), 0);
+            
+            const back9A = sumPoints(holesA, 9, 18);
+            const back9B = sumPoints(holesB, 9, 18);
+            if (back9A !== back9B) return back9A - back9B;
+            
+            const back6A = sumPoints(holesA, 12, 18);
+            const back6B = sumPoints(holesB, 12, 18);
+            if (back6A !== back6B) return back6A - back6B;
+            
+            const back3A = sumPoints(holesA, 15, 18);
+            const back3B = sumPoints(holesB, 15, 18);
+            if (back3A !== back3B) return back3A - back3B;
+            
+            const last1A = useNet ? holesA[17].netPoints : holesA[17].grossPoints;
+            const last1B = useNet ? holesB[17].netPoints : holesB[17].grossPoints;
+            return last1A - last1B;
+        }
+
+        function getCountbackDetail(result, useNet) {
+            const holes = result.holeDetails || result.rounds?.[result.rounds.length - 1]?.holeDetails || [];
+            const sumPoints = (start, end) => 
+                holes.slice(start, end).reduce((sum, h) => 
+                    sum + (useNet ? h.netPoints : h.grossPoints), 0);
+            
+            return {
+                back9: sumPoints(9, 18),
+                back6: sumPoints(12, 18),
+                back3: sumPoints(15, 18),
+                last1: useNet ? holes[17]?.netPoints : holes[17]?.grossPoints
+            };
+        }
+
+        // Initialize
+        loadData();
+    </script>
+</body>
+</html>

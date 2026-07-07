@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golf Tournament - Player Scoring</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .login-section {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .player-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .player-info h3 {
+            margin-bottom: 10px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .info-item label {
+            font-size: 12px;
+            opacity: 0.9;
+            color: white;
+            font-weight: normal;
+        }
+
+        .info-item .value {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .scorecard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .scorecard-table th,
+        .scorecard-table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .scorecard-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .hole-header {
+            background: #667eea;
+            color: white;
+        }
+
+        .score-input {
+            width: 50px;
+            padding: 8px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .score-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .score-input.error {
+            border-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .total-cell {
+            background: #fff3cd;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .validation-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .validation-message.success {
+            background: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+
+        .par-row {
+            background: #f1f3f5;
+            font-weight: 600;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 22px;
+            }
+            
+            .scorecard-table {
+                font-size: 14px;
+            }
+            
+            .score-input {
+                width: 40px;
+                padding: 6px;
+            }
+        }
+        
+        .admin-notice {
+            background: #fff3cd;
+            border: 3px solid #ffc107;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .admin-notice h3 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .admin-notice p {
+            color: #856404;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .admin-notice .timestamp {
+            font-size: 12px;
+            color: #856404;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Admin Notices -->
+        <div id="admin-notices"></div>
+
+        <!-- Login Section -->
+        <div id="login-section">
+            <div class="header">
+                <h1>⛳ Golf Tournament</h1>
+                <p style="color: #6c757d;">Player Score Entry</p>
+            </div>
+
+            <div class="card login-section">
+                <h2>Player Login</h2>
+                <div class="form-group">
+                    <label for="playerSelect">Select Your Name</label>
+                    <select id="playerSelect">
+                        <option value="">-- Choose Player --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="roundSelect">Select Round</label>
+                    <select id="roundSelect">
+                        <option value="">-- Choose Round --</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="login()">Continue</button>
+            </div>
+        </div>
+
+        <!-- Scoring Section -->
+        <div id="scoring-section" class="hidden">
+            <div class="header">
+                <h1>⛳ Golf Tournament</h1>
+                <button class="btn btn-secondary" style="width: auto; padding: 8px 16px;" onclick="logout()">Logout</button>
+            </div>
+
+            <div class="player-info" id="playerInfo">
+                <!-- Player info will be populated here -->
+            </div>
+
+            <div class="card">
+                <h2>Score Entry</h2>
+                <div class="alert alert-info">
+                    <strong>Instructions:</strong> Enter your scores and your playing partner's scores. Scores auto-save as you type and advance to the next hole automatically.
+                    <div id="autoSaveIndicator" style="margin-top: 10px; color: #28a745; font-weight: bold; opacity: 0; transition: opacity 0.3s;">✓ Auto-saved</div>
+                </div>
+
+                <div class="form-group" style="max-width: 300px;">
+                    <label for="partnerSelect">Select Playing Partner</label>
+                    <select id="partnerSelect">
+                        <option value="">-- Choose Partner --</option>
+                    </select>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="scorecard-table" id="scorecardTable">
+                        <!-- Scorecard will be generated here -->
+                    </table>
+                </div>
+
+                <div id="validationMessage"></div>
+
+                <div class="btn-group">
+                    <button class="btn" onclick="saveScores()">Final Save & Ready for Validation</button>
+                    <button class="btn btn-secondary" onclick="validateScores()">Validate with Partner</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>My Scores</h2>
+                <div id="myScoresView">
+                    <p style="color: #6c757d;">Your scores for this round will appear here after saving.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tournamentData = null;
+        let currentPlayer = null;
+        let currentRound = null;
+        let currentPartner = null;
+        let scores = {
+            own: Array(18).fill(0),
+            partner: Array(18).fill(0)
+        };
+
+        // Initialize
+        function init() {
+            loadTournamentData();
+            loadAdminNotices();
+            populatePlayerSelect();
+            populateRoundSelect();
+        }
+
+        function loadAdminNotices() {
+            const controlsSaved = localStorage.getItem('adminControls');
+            if (!controlsSaved) return;
+
+            const adminControls = JSON.parse(controlsSaved);
+            if (!adminControls.notices || adminControls.notices.length === 0) return;
+
+            const container = document.getElementById('admin-notices');
+            let html = '';
+
+            adminControls.notices.forEach(notice => {
+                const date = new Date(notice.timestamp);
+                html += `<div class="admin-notice">`;
+                html += `<h3>📢 ${notice.title}</h3>`;
+                html += `<p>${notice.message}</p>`;
+                html += `<div class="timestamp">Posted: ${date.toLocaleString()}</div>`;
+                html += `</div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function loadTournamentData() {
+            const saved = localStorage.getItem('golfTournamentData');
+            if (saved) {
+                tournamentData = JSON.parse(saved);
+            } else {
+                alert('No tournament data found. Please contact the administrator.');
+            }
+        }
+
+        function populatePlayerSelect() {
+            const select = document.getElementById('playerSelect');
+            select.innerHTML = '<option value="">-- Choose Player --</option>';
+            
+            if (tournamentData && tournamentData.players) {
+                tournamentData.players.forEach(player => {
+                    const option = document.createElement('option');
+                    option.value = player.id;
+                    option.textContent = player.name;
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        function populateRoundSelect() {
+            const select = document.getElementById('roundSelect');
+            select.innerHTML = '<option value="">-- Choose Round --</option>';
+            
+            if (tournamentData && tournamentData.rounds) {
+                tournamentData.rounds.forEach((round, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `Round ${round.number}${round.date ? ' - ' + round.date : ''}`;
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        function login() {
+            const playerId = parseInt(document.getElementById('playerSelect').value);
+            const roundIndex = parseInt(document.getElementById('roundSelect').value);
+            
+            if (!playerId || roundIndex === '') {
+                alert('Please select both player and round');
+                return;
+            }
+            
+            currentPlayer = tournamentData.players.find(p => p.id === playerId);
+            currentRound = roundIndex;
+            
+            // Check round status
+            const round = tournamentData.rounds[currentRound];
+            if (round.status === 'closed') {
+                alert('This round is CLOSED. Scores cannot be entered or modified.');
+                return;
+            }
+            
+            // Initialize round scores if not exists
+            if (!tournamentData.rounds[currentRound].scores) {
+                tournamentData.rounds[currentRound].scores = {};
+            }
+            
+            // Initialize scorecards structure
+            if (!tournamentData.scorecards) {
+                tournamentData.scorecards = {};
+            }
+            if (!tournamentData.scorecards[currentRound]) {
+                tournamentData.scorecards[currentRound] = {};
+            }
+            
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('scoring-section').classList.remove('hidden');
+            
+            displayPlayerInfo();
+            populatePartnerSelect();
+            checkScorecardStatus();
+        }
+
+        function logout() {
+            document.getElementById('scoring-section').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+            currentPlayer = null;
+            currentRound = null;
+            currentPartner = null;
+        }
+
+        function displayPlayerInfo() {
+            const info = document.getElementById('playerInfo');
+            info.innerHTML = `
+                <h3>${currentPlayer.name}</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>GA Index</label>
+                        <div class="value">${currentPlayer.gaIndex.toFixed(1)}</div>
+                    </div>
+                    <div class="info-item">
+                        <label>Playing Handicap</label>
+                        <div class="value">${currentPlayer.playingHandicap}</div>
+                    </div>
+                    <div class="info-item">
+                        <label>Round</label>
+                        <div class="value">${tournamentData.rounds[currentRound].number}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function populatePartnerSelect() {
+            const select = document.getElementById('partnerSelect');
+            select.innerHTML = '<option value="">-- Choose Partner --</option>';
+            
+            tournamentData.players.forEach(player => {
+                if (player.id !== currentPlayer.id) {
+                    const option = document.createElement('option');
+                    option.value = player.id;
+                    option.textContent = player.name;
+                    select.appendChild(option);
+                }
+            });
+            
+            select.addEventListener('change', function() {
+                currentPartner = tournamentData.players.find(p => p.id === parseInt(this.value));
+                checkScorecardStatus();
+            });
+        }
+
+        function checkScorecardStatus() {
+            const scorecard = tournamentData.scorecards[currentRound]?.[currentPlayer.id];
+            
+            if (scorecard && scorecard.status === 'accepted') {
+                // Scorecard is accepted - show locked message
+                showValidationMessage('✓ Your scorecard has been ACCEPTED by the administrator. Scores are locked and cannot be changed.', true);
+                disableScoreEntry(true);
+            } else {
+                // Scorecard not accepted - allow entry
+                disableScoreEntry(false);
+                generateScorecard();
+                loadExistingScores();
+            }
+        }
+
+        function disableScoreEntry(disabled) {
+            if (disabled) {
+                document.getElementById('scorecardTable').innerHTML = `
+                    <tr><td colspan="20" style="text-align: center; padding: 40px;">
+                        <h3 style="color: #28a745; margin-bottom: 10px;">✓ Scorecard Accepted</h3>
+                        <p style="color: #6c757d;">Your scorecard has been accepted by the administrator.</p>
+                        <p style="color: #6c757d;">Scores are locked and cannot be changed.</p>
+                    </td></tr>
+                `;
+                document.querySelector('button[onclick="saveScores()"]').disabled = true;
+                document.querySelector('button[onclick="validateScores()"]').disabled = true;
+                document.getElementById('partnerSelect').disabled = true;
+                
+                // Still show scores in the view section
+                displayMyScores();
+            } else {
+                document.querySelector('button[onclick="saveScores()"]').disabled = false;
+                document.querySelector('button[onclick="validateScores()"]').disabled = false;
+                document.getElementById('partnerSelect').disabled = false;
+            }
+        }
+
+        function generateScorecard() {
+            const table = document.getElementById('scorecardTable');
+            let html = '<thead><tr class="hole-header"><th>Hole</th>';
+            
+            // Front 9
+            for (let i = 1; i <= 9; i++) {
+                html += `<th>${i}</th>`;
+            }
+            html += '<th style="background: #555;">OUT</th>';
+            
+            // Back 9
+            for (let i = 10; i <= 18; i++) {
+                html += `<th>${i}</th>`;
+            }
+            html += '<th style="background: #555;">IN</th>';
+            html += '<th style="background: #333;">TOTAL</th>';
+            html += '</tr></thead><tbody>';
+            
+            // Par row
+            html += '<tr class="par-row"><td>Par</td>';
+            let frontPar = 0, backPar = 0;
+            tournamentData.course.holes.forEach((hole, i) => {
+                html += `<td>${hole.par}</td>`;
+                if (i < 9) frontPar += hole.par;
+                else backPar += hole.par;
+                if (i === 8) html += `<td style="font-weight: bold;">${frontPar}</td>`;
+            });
+            html += `<td style="font-weight: bold;">${backPar}</td>`;
+            html += `<td style="font-weight: bold;">${frontPar + backPar}</td></tr>`;
+            
+            // Stroke Index row
+            html += '<tr class="par-row"><td>SI</td>';
+            tournamentData.course.holes.forEach((hole, i) => {
+                html += `<td>${hole.strokeIndex}</td>`;
+                if (i === 8) html += '<td>-</td>';
+            });
+            html += '<td>-</td><td>-</td></tr>';
+            
+            // Own scores
+            html += `<tr><td><strong>${currentPlayer.name}</strong></td>`;
+            for (let i = 0; i < 18; i++) {
+                html += `<td><input type="number" class="score-input own-score" data-hole="${i}" value="${scores.own[i] || ''}" min="0" max="15"></td>`;
+                if (i === 8) html += `<td class="total-cell" id="own-out-total">0</td>`;
+            }
+            html += `<td class="total-cell" id="own-in-total">0</td>`;
+            html += `<td class="total-cell" id="own-total">0</td></tr>`;
+            
+            // Own Stableford points row
+            html += `<tr style="background: #f0f8ff;"><td style="font-size: 11px; color: #667eea;"><em>Stableford</em></td>`;
+            for (let i = 0; i < 18; i++) {
+                html += `<td style="font-size: 11px; color: #667eea;" id="own-stab-${i}">-</td>`;
+                if (i === 8) html += `<td style="font-size: 11px; color: #667eea; font-weight: bold;" id="own-stab-out">0</td>`;
+            }
+            html += `<td style="font-size: 11px; color: #667eea; font-weight: bold;" id="own-stab-in">0</td>`;
+            html += `<td style="font-size: 11px; color: #667eea; font-weight: bold;" id="own-stab-total">0</td></tr>`;
+            
+            // Partner scores (if selected)
+            if (currentPartner) {
+                html += `<tr><td><strong>${currentPartner.name}</strong></td>`;
+                for (let i = 0; i < 18; i++) {
+                    html += `<td><input type="number" class="score-input partner-score" data-hole="${i}" value="${scores.partner[i] || ''}" min="0" max="15"></td>`;
+                    if (i === 8) html += `<td class="total-cell" id="partner-out-total">0</td>`;
+                }
+                html += `<td class="total-cell" id="partner-in-total">0</td>`;
+                html += `<td class="total-cell" id="partner-total">0</td></tr>`;
+                
+                // Partner Stableford points row
+                html += `<tr style="background: #f0f8ff;"><td style="font-size: 11px; color: #667eea;"><em>Stableford</em></td>`;
+                for (let i = 0; i < 18; i++) {
+                    html += `<td style="font-size: 11px; color: #667eea;" id="partner-stab-${i}">-</td>`;
+                    if (i === 8) html += `<td style="font-size: 11px; color: #667eea; font-weight: bold;" id="partner-stab-out">0</td>`;
+                }
+                html += `<td style="font-size: 11px; color: #667eea; font-weight: bold;" id="partner-stab-in">0</td>`;
+                html += `<td style="font-size: 11px; color: #667eea; font-weight: bold;" id="partner-stab-total">0</td></tr>`;
+            }
+            
+            html += '</tbody>';
+            table.innerHTML = html;
+            
+            // Add event listeners with auto-advance and auto-save
+            document.querySelectorAll('.own-score').forEach((input, index) => {
+                input.addEventListener('input', function() {
+                    const holeIndex = parseInt(this.dataset.hole);
+                    const value = parseInt(this.value);
+                    
+                    // Update score
+                    scores.own[holeIndex] = value || 0;
+                    updateTotals();
+                    updateStableford();
+                    
+                    // Only proceed with auto-advance if valid number entered
+                    if (value && value > 0) {
+                        // Auto-save this hole
+                        autoSaveHole();
+                        
+                        // Auto-advance to next hole
+                        const allOwnInputs = document.querySelectorAll('.own-score');
+                        if (index < allOwnInputs.length - 1) {
+                            allOwnInputs[index + 1].focus();
+                            allOwnInputs[index + 1].select();
+                        }
+                    }
+                });
+                
+                // Also handle Enter key
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        const allOwnInputs = document.querySelectorAll('.own-score');
+                        if (index < allOwnInputs.length - 1) {
+                            allOwnInputs[index + 1].focus();
+                            allOwnInputs[index + 1].select();
+                        }
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.partner-score').forEach((input, index) => {
+                input.addEventListener('input', function() {
+                    const holeIndex = parseInt(this.dataset.hole);
+                    const value = parseInt(this.value);
+                    
+                    // Update score
+                    scores.partner[holeIndex] = value || 0;
+                    updateTotals();
+                    updateStableford();
+                    
+                    // Only proceed with auto-advance if valid number entered
+                    if (value && value > 0) {
+                        // Auto-save this hole
+                        autoSaveHole();
+                        
+                        // Auto-advance to next hole
+                        const allPartnerInputs = document.querySelectorAll('.partner-score');
+                        if (index < allPartnerInputs.length - 1) {
+                            allPartnerInputs[index + 1].focus();
+                            allPartnerInputs[index + 1].select();
+                        }
+                    }
+                });
+                
+                // Also handle Enter key
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        const allPartnerInputs = document.querySelectorAll('.partner-score');
+                        if (index < allPartnerInputs.length - 1) {
+                            allPartnerInputs[index + 1].focus();
+                            allPartnerInputs[index + 1].select();
+                        }
+                    }
+                });
+            });
+            
+            updateTotals();
+            updateStableford();
+        }
+
+        function updateTotals() {
+            // Own totals
+            const ownFront = scores.own.slice(0, 9).reduce((a, b) => a + b, 0);
+            const ownBack = scores.own.slice(9, 18).reduce((a, b) => a + b, 0);
+            const ownTotal = ownFront + ownBack;
+            
+            if (document.getElementById('own-out-total')) {
+                document.getElementById('own-out-total').textContent = ownFront || 0;
+            }
+            if (document.getElementById('own-in-total')) {
+                document.getElementById('own-in-total').textContent = ownBack || 0;
+            }
+            document.getElementById('own-total').textContent = ownTotal || 0;
+            
+            // Partner totals
+            if (currentPartner) {
+                const partnerFront = scores.partner.slice(0, 9).reduce((a, b) => a + b, 0);
+                const partnerBack = scores.partner.slice(9, 18).reduce((a, b) => a + b, 0);
+                const partnerTotal = partnerFront + partnerBack;
+                
+                if (document.getElementById('partner-out-total')) {
+                    document.getElementById('partner-out-total').textContent = partnerFront || 0;
+                }
+                if (document.getElementById('partner-in-total')) {
+                    document.getElementById('partner-in-total').textContent = partnerBack || 0;
+                }
+                if (document.getElementById('partner-total')) {
+                    document.getElementById('partner-total').textContent = partnerTotal || 0;
+                }
+            }
+        }
+
+        function updateStableford() {
+            // Calculate own Stableford points
+            const ownStab = calculateStablefordPoints(scores.own, currentPlayer.playingHandicap);
+            let ownFrontStab = 0, ownBackStab = 0;
+            
+            ownStab.forEach((pts, i) => {
+                const cell = document.getElementById(`own-stab-${i}`);
+                if (cell) cell.textContent = pts || '-';
+                if (i < 9) ownFrontStab += pts;
+                else ownBackStab += pts;
+            });
+            
+            if (document.getElementById('own-stab-out')) {
+                document.getElementById('own-stab-out').textContent = ownFrontStab;
+            }
+            if (document.getElementById('own-stab-in')) {
+                document.getElementById('own-stab-in').textContent = ownBackStab;
+            }
+            if (document.getElementById('own-stab-total')) {
+                document.getElementById('own-stab-total').textContent = ownFrontStab + ownBackStab;
+            }
+            
+            // Calculate partner Stableford points
+            if (currentPartner) {
+                const partnerStab = calculateStablefordPoints(scores.partner, currentPartner.playingHandicap);
+                let partnerFrontStab = 0, partnerBackStab = 0;
+                
+                partnerStab.forEach((pts, i) => {
+                    const cell = document.getElementById(`partner-stab-${i}`);
+                    if (cell) cell.textContent = pts || '-';
+                    if (i < 9) partnerFrontStab += pts;
+                    else partnerBackStab += pts;
+                });
+                
+                if (document.getElementById('partner-stab-out')) {
+                    document.getElementById('partner-stab-out').textContent = partnerFrontStab;
+                }
+                if (document.getElementById('partner-stab-in')) {
+                    document.getElementById('partner-stab-in').textContent = partnerBackStab;
+                }
+                if (document.getElementById('partner-stab-total')) {
+                    document.getElementById('partner-stab-total').textContent = partnerFrontStab + partnerBackStab;
+                }
+            }
+        }
+
+        function calculateStablefordPoints(scores, playingHandicap) {
+            const points = [];
+            
+            for (let i = 0; i < 18; i++) {
+                const hole = tournamentData.course.holes[i];
+                const grossScore = scores[i];
+                
+                if (!grossScore || grossScore === 0) {
+                    points.push(0);
+                    continue;
+                }
+                
+                // Calculate strokes received
+                let strokesReceived = 0;
+                if (playingHandicap > 0) {
+                    if (playingHandicap >= hole.strokeIndex) {
+                        strokesReceived = Math.floor(playingHandicap / 18) + 1;
+                    } else if (playingHandicap >= hole.strokeIndex - 18) {
+                        strokesReceived = 1;
+                    }
+                }
+                
+                // Calculate net score
+                const netScore = grossScore - strokesReceived;
+                
+                // Calculate Stableford points
+                const relative = netScore - hole.par;
+                let pts = 0;
+                if (relative <= -2) pts = 4; // Eagle or better
+                else if (relative === -1) pts = 3; // Birdie
+                else if (relative === 0) pts = 2; // Par
+                else if (relative === 1) pts = 1; // Bogey
+                // else pts = 0 (double bogey or worse)
+                
+                points.push(pts);
+            }
+            
+            return points;
+        }
+
+        // Auto-save with debounce to prevent too many saves
+        let autoSaveTimeout;
+        function autoSaveHole() {
+            if (!currentPartner) {
+                return; // Can't auto-save without partner selected
+            }
+            
+            // Check if scorecard is already accepted
+            const scorecard = tournamentData.scorecards[currentRound]?.[currentPlayer.id];
+            if (scorecard && scorecard.status === 'accepted') {
+                return; // Can't save if accepted
+            }
+            
+            // Clear existing timeout
+            clearTimeout(autoSaveTimeout);
+            
+            // Set new timeout (wait 500ms after last input)
+            autoSaveTimeout = setTimeout(() => {
+                if (!tournamentData.rounds[currentRound].scores) {
+                    tournamentData.rounds[currentRound].scores = {};
+                }
+                
+                // Save scores
+                tournamentData.rounds[currentRound].scores[currentPlayer.id] = [...scores.own];
+                tournamentData.rounds[currentRound].scores[currentPartner.id] = [...scores.partner];
+                
+                // Create/update scorecard entry
+                if (!tournamentData.scorecards[currentRound]) {
+                    tournamentData.scorecards[currentRound] = {};
+                }
+                
+                tournamentData.scorecards[currentRound][currentPlayer.id] = {
+                    playerId: currentPlayer.id,
+                    partnerId: currentPartner.id,
+                    scores: [...scores.own],
+                    partnerScores: [...scores.partner],
+                    status: scorecard?.status || 'pending',
+                    timestamp: new Date().toISOString()
+                };
+                
+                localStorage.setItem('golfTournamentData', JSON.stringify(tournamentData));
+                
+                // Show brief auto-save indicator
+                showAutoSaveIndicator();
+            }, 500);
+        }
+
+        function showAutoSaveIndicator() {
+            const indicator = document.getElementById('autoSaveIndicator');
+            if (indicator) {
+                indicator.textContent = '✓ Auto-saved';
+                indicator.style.opacity = '1';
+                
+                setTimeout(() => {
+                    indicator.style.opacity = '0';
+                }, 2000);
+            }
+        }
+
+        function loadExistingScores() {
+            const scorecard = tournamentData.scorecards[currentRound]?.[currentPlayer.id];
+            
+            if (scorecard) {
+                // Load from scorecard structure
+                scores.own = [...scorecard.scores];
+                scores.partner = [...scorecard.partnerScores];
+                
+                document.querySelectorAll('.own-score').forEach((input, index) => {
+                    input.value = scores.own[index] || '';
+                });
+                
+                if (currentPartner) {
+                    document.querySelectorAll('.partner-score').forEach((input, index) => {
+                        input.value = scores.partner[index] || '';
+                    });
+                }
+            } else {
+                // Fallback to round scores (legacy)
+                const roundScores = tournamentData.rounds[currentRound].scores;
+                
+                if (roundScores[currentPlayer.id]) {
+                    scores.own = [...roundScores[currentPlayer.id]];
+                    document.querySelectorAll('.own-score').forEach((input, index) => {
+                        input.value = scores.own[index] || '';
+                    });
+                }
+                
+                if (currentPartner && roundScores[currentPartner.id]) {
+                    scores.partner = [...roundScores[currentPartner.id]];
+                    document.querySelectorAll('.partner-score').forEach((input, index) => {
+                        input.value = scores.partner[index] || '';
+                    });
+                }
+            }
+            
+            updateTotals();
+            displayMyScores();
+        }
+
+        function saveScores() {
+            if (!currentPartner) {
+                alert('Please select a playing partner before saving scores.');
+                return;
+            }
+            
+            // Check if scorecard is already accepted
+            const scorecard = tournamentData.scorecards[currentRound]?.[currentPlayer.id];
+            if (scorecard && scorecard.status === 'accepted') {
+                alert('Your scorecard has been accepted and cannot be changed.');
+                return;
+            }
+            
+            if (!tournamentData.rounds[currentRound].scores) {
+                tournamentData.rounds[currentRound].scores = {};
+            }
+            
+            // Save own scores
+            tournamentData.rounds[currentRound].scores[currentPlayer.id] = [...scores.own];
+            
+            // Save partner scores
+            tournamentData.rounds[currentRound].scores[currentPartner.id] = [...scores.partner];
+            
+            // Create/update scorecard entry
+            if (!tournamentData.scorecards[currentRound]) {
+                tournamentData.scorecards[currentRound] = {};
+            }
+            
+            tournamentData.scorecards[currentRound][currentPlayer.id] = {
+                playerId: currentPlayer.id,
+                partnerId: currentPartner.id,
+                scores: [...scores.own],
+                partnerScores: [...scores.partner],
+                status: scorecard?.status || 'pending',
+                timestamp: new Date().toISOString()
+            };
+            
+            localStorage.setItem('golfTournamentData', JSON.stringify(tournamentData));
+            
+            showValidationMessage('Scores saved successfully! Remember to validate with your partner.', true);
+            displayMyScores();
+        }
+
+        function validateScores() {
+            if (!currentPartner) {
+                showValidationMessage('Please select a playing partner to validate scores.', false);
+                return;
+            }
+            
+            const scorecards = tournamentData.scorecards[currentRound];
+            if (!scorecards) {
+                showValidationMessage('No scorecards found. Both players must save scores before validation.', false);
+                return;
+            }
+            
+            const ownScorecard = scorecards[currentPlayer.id];
+            const partnerScorecard = scorecards[currentPartner.id];
+            
+            if (!ownScorecard || !partnerScorecard) {
+                showValidationMessage('Partner has not entered scores yet. Both players must save scores before validation.', false);
+                return;
+            }
+            
+            // Check if partner's entry for current player matches current player's own entry
+            let mismatch = false;
+            let mismatchHoles = [];
+            
+            for (let i = 0; i < 18; i++) {
+                // Check: My score vs what partner entered for me
+                if (ownScorecard.scores[i] !== partnerScorecard.partnerScores[i]) {
+                    mismatch = true;
+                    mismatchHoles.push(i + 1);
+                }
+                // Check: Partner's score vs what I entered for partner
+                if (partnerScorecard.scores[i] !== ownScorecard.partnerScores[i]) {
+                    mismatch = true;
+                    if (!mismatchHoles.includes(i + 1)) {
+                        mismatchHoles.push(i + 1);
+                    }
+                }
+            }
+            
+            if (mismatch) {
+                showValidationMessage(`⚠ Score mismatch on hole(s): ${mismatchHoles.join(', ')}. Please verify with your partner and re-save.`, false);
+                
+                // Highlight mismatched holes
+                document.querySelectorAll('.own-score').forEach((input, index) => {
+                    if (mismatchHoles.includes(index + 1)) {
+                        input.classList.add('error');
+                    } else {
+                        input.classList.remove('error');
+                    }
+                });
+                document.querySelectorAll('.partner-score').forEach((input, index) => {
+                    if (mismatchHoles.includes(index + 1)) {
+                        input.classList.add('error');
+                    } else {
+                        input.classList.remove('error');
+                    }
+                });
+            } else {
+                showValidationMessage('✓ Scores validated successfully! Your scores match your partner\'s entry. Your scorecard is ready for administrator acceptance.', true);
+                document.querySelectorAll('.own-score, .partner-score').forEach(input => {
+                    input.classList.remove('error');
+                });
+            }
+        }
+
+        function showValidationMessage(message, isSuccess) {
+            const msgDiv = document.getElementById('validationMessage');
+            msgDiv.className = isSuccess ? 'validation-message success' : 'validation-message';
+            msgDiv.textContent = message;
+            
+            setTimeout(() => {
+                msgDiv.textContent = '';
+                msgDiv.className = '';
+            }, 5000);
+        }
+
+        function displayMyScores() {
+            const container = document.getElementById('myScoresView');
+            const roundScores = tournamentData.rounds[currentRound].scores;
+            
+            if (!roundScores[currentPlayer.id]) {
+                container.innerHTML = '<p style="color: #6c757d;">No scores saved yet for this round.</p>';
+                return;
+            }
+            
+            const myScores = roundScores[currentPlayer.id];
+            const totalPar = tournamentData.course.holes.reduce((sum, hole) => sum + hole.par, 0);
+            const totalScore = myScores.reduce((a, b) => a + b, 0);
+            const relative = totalScore - totalPar;
+            
+            let html = `
+                <div class="info-grid">
+                    <div class="info-item" style="background: #667eea; color: white;">
+                        <label>Total Score</label>
+                        <div class="value">${totalScore}</div>
+                    </div>
+                    <div class="info-item" style="background: #764ba2; color: white;">
+                        <label>Relative to Par</label>
+                        <div class="value">${relative > 0 ? '+' : ''}${relative}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <strong>Hole-by-hole:</strong>
+                    <div style="display: grid; grid-template-columns: repeat(9, 1fr); gap: 5px; margin-top: 10px;">
+            `;
+            
+            myScores.forEach((score, index) => {
+                html += `<div style="text-align: center; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                    <div style="font-size: 12px; color: #6c757d;">H${index + 1}</div>
+                    <div style="font-weight: bold;">${score || '-'}</div>
+                </div>`;
+            });
+            
+            html += '</div></div>';
+            container.innerHTML = html;
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>

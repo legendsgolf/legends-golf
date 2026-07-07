@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #1e3c72;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #2a5298;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .toggle-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .toggle-section h3 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .toggle-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .toggle-item-info {
+            flex: 1;
+        }
+
+        .toggle-item-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .toggle-item-desc {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            margin-left: 20px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 30px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #28a745;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status-enabled {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-disabled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .day-management {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .day-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #2a5298;
+        }
+
+        .day-card h4 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+
+        .day-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .day-open {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .day-closed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #1e3c72;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .notice-preview {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .notice-preview h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Admin Control Panel</h1>
+            <p style="color: #6c757d;">Master controls for visibility, permissions, and day management</p>
+        </div>
+
+        <!-- Visibility Controls -->
+        <div class="card">
+            <h2>👁️ Player Visibility Controls</h2>
+            <p style="color: #6c757d; margin-bottom: 20px;">Control what players can see. You (admin) always see everything.</p>
+
+            <div class="toggle-section">
+                <h3>Leaderboards & Results</h3>
+
+                <div class="toggle-item">
+                    <div class="toggle-item-info">
+                        <div class="toggle-item-title">Live Leaderboard</div>
+                        <div class="toggle-item-desc">Players can see live Net Stableford standings during the day</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-live-leaderboard" onchange="saveToggles()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="toggle-item">
+                    <div class="toggle-item-info">
+                        <div class="toggle-item-title">Daily Final Leaderboard</div>
+                        <div class="toggle-item-desc">Full field results for completed day (reveal when ready)</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-daily-final" onchange="saveToggles()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="toggle-item">
+                    <div class="toggle-item-info">
+                        <div class="toggle-item-title">Overall Final Leaderboard</div>
+                        <div class="toggle-item-desc">Cumulative standings across all days (reveal when ready)</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-overall-final" onchange="saveToggles()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <strong>💡 How to use:</strong> Turn these ON when you want players to see results. Turn OFF to hide them. Use the reveal leaderboards for dramatic announcements!
+            </div>
+        </div>
+
+        <!-- Day Management -->
+        <div class="card">
+            <h2>📅 Day Management</h2>
+            
+            <div class="form-group" style="max-width: 300px;">
+                <label for="num-days">Number of Main Competition Days (1-6):</label>
+                <input type="number" id="num-days" min="1" max="6" value="1" onchange="updateDayManagement()">
+            </div>
+
+            <button class="btn btn-success" onclick="applyDayConfiguration()">Apply Day Configuration</button>
+
+            <div id="day-management-container" class="day-management"></div>
+        </div>
+
+        <!-- Admin Notices -->
+        <div class="card">
+            <h2>📢 Admin Notice Board</h2>
+            <p style="color: #6c757d; margin-bottom: 20px;">Post alerts and messages visible to all players</p>
+
+            <div class="form-group">
+                <label for="notice-title">Notice Title:</label>
+                <input type="text" id="notice-title" placeholder="e.g., Weather Alert, Course Update">
+            </div>
+
+            <div class="form-group">
+                <label for="notice-message">Message:</label>
+                <textarea id="notice-message" placeholder="Enter your message to players..."></textarea>
+            </div>
+
+            <button class="btn btn-success" onclick="postNotice()">Post Notice</button>
+            <button class="btn btn-danger" onclick="clearNotice()">Clear Notice</button>
+
+            <div id="notice-preview"></div>
+
+            <div id="current-notices" style="margin-top: 30px;"></div>
+        </div>
+
+        <!-- Quick Access Links -->
+        <div class="card">
+            <h2>🔗 Quick Access</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                <button class="btn" onclick="window.open('presentation.html', '_blank')">📊 Presentation Page</button>
+                <button class="btn" onclick="window.open('golf-tournament-admin.html', '_blank')">⚙️ Main Admin</button>
+                <button class="btn" onclick="window.open('player-leaderboard.html', '_blank')">📈 Player Leaderboard</button>
+                <button class="btn" onclick="window.open('reveal-leaderboards.html', '_blank')">🏆 Reveal Leaderboards</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let adminControls = {
+            visibility: {
+                liveLeaderboard: false,
+                dailyFinal: false,
+                overallFinal: false
+            },
+            days: {
+                numDays: 1,
+                dayStatus: {} // { 0: 'open', 1: 'closed' }
+            },
+            notices: []
+        };
+
+        function init() {
+            loadControls();
+            updateToggles();
+            updateDayManagement();
+            displayNotices();
+        }
+
+        function loadControls() {
+            const saved = localStorage.getItem('adminControls');
+            if (saved) {
+                adminControls = JSON.parse(saved);
+            }
+        }
+
+        function saveControls() {
+            localStorage.setItem('adminControls', JSON.stringify(adminControls));
+        }
+
+        function updateToggles() {
+            document.getElementById('toggle-live-leaderboard').checked = adminControls.visibility.liveLeaderboard;
+            document.getElementById('toggle-daily-final').checked = adminControls.visibility.dailyFinal;
+            document.getElementById('toggle-overall-final').checked = adminControls.visibility.overallFinal;
+            document.getElementById('num-days').value = adminControls.days.numDays;
+        }
+
+        function saveToggles() {
+            adminControls.visibility.liveLeaderboard = document.getElementById('toggle-live-leaderboard').checked;
+            adminControls.visibility.dailyFinal = document.getElementById('toggle-daily-final').checked;
+            adminControls.visibility.overallFinal = document.getElementById('toggle-overall-final').checked;
+            saveControls();
+            
+            showAlert('Visibility settings saved!');
+        }
+
+        function applyDayConfiguration() {
+            const numDays = parseInt(document.getElementById('num-days').value);
+            adminControls.days.numDays = numDays;
+            
+            // Initialize day status if not exists
+            for (let i = 0; i < numDays; i++) {
+                if (adminControls.days.dayStatus[i] === undefined) {
+                    adminControls.days.dayStatus[i] = i === 0 ? 'open' : 'closed';
+                }
+            }
+            
+            saveControls();
+            updateDayManagement();
+            showAlert(`Configuration applied: ${numDays} day${numDays > 1 ? 's' : ''}`);
+        }
+
+        function updateDayManagement() {
+            const container = document.getElementById('day-management-container');
+            const numDays = adminControls.days.numDays;
+            
+            let html = '<h3 style="margin-top: 30px; margin-bottom: 15px; color: #1e3c72;">Day Status Control</h3>';
+            
+            for (let i = 0; i < numDays; i++) {
+                const status = adminControls.days.dayStatus[i] || 'closed';
+                const isOpen = status === 'open';
+                
+                html += `<div class="day-card">`;
+                html += `<h4>Day ${i + 1}</h4>`;
+                html += `<span class="day-status ${isOpen ? 'day-open' : 'day-closed'}">${isOpen ? '🔓 OPEN' : '🔒 CLOSED'}</span><br>`;
+                
+                if (isOpen) {
+                    html += `<button class="btn btn-danger btn-small" onclick="closeDay(${i})">Close Day</button>`;
+                } else {
+                    html += `<button class="btn btn-success btn-small" onclick="openDay(${i})">Open Day</button>`;
+                }
+                
+                html += `</div>`;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function openDay(dayIndex) {
+            adminControls.days.dayStatus[dayIndex] = 'open';
+            saveControls();
+            updateDayManagement();
+            showAlert(`Day ${dayIndex + 1} is now OPEN for scoring`);
+        }
+
+        function closeDay(dayIndex) {
+            if (confirm(`Close Day ${dayIndex + 1}? Players will no longer be able to edit scores.`)) {
+                adminControls.days.dayStatus[dayIndex] = 'closed';
+                saveControls();
+                updateDayManagement();
+                showAlert(`Day ${dayIndex + 1} is now CLOSED and locked`);
+            }
+        }
+
+        function postNotice() {
+            const title = document.getElementById('notice-title').value.trim();
+            const message = document.getElementById('notice-message').value.trim();
+            
+            if (!title || !message) {
+                alert('Please enter both title and message');
+                return;
+            }
+            
+            const notice = {
+                id: Date.now(),
+                title: title,
+                message: message,
+                timestamp: new Date().toISOString()
+            };
+            
+            adminControls.notices.unshift(notice);
+            saveControls();
+            
+            document.getElementById('notice-title').value = '';
+            document.getElementById('notice-message').value = '';
+            
+            displayNotices();
+            showAlert('Notice posted to all players!');
+        }
+
+        function clearNotice() {
+            if (confirm('Clear all notices?')) {
+                adminControls.notices = [];
+                saveControls();
+                displayNotices();
+                showAlert('All notices cleared');
+            }
+        }
+
+        function deleteNotice(noticeId) {
+            adminControls.notices = adminControls.notices.filter(n => n.id !== noticeId);
+            saveControls();
+            displayNotices();
+        }
+
+        function displayNotices() {
+            const container = document.getElementById('current-notices');
+            
+            if (adminControls.notices.length === 0) {
+                container.innerHTML = '<p style="color: #6c757d;">No active notices</p>';
+                return;
+            }
+            
+            let html = '<h3 style="margin-bottom: 15px; color: #1e3c72;">Active Notices</h3>';
+            
+            adminControls.notices.forEach(notice => {
+                const date = new Date(notice.timestamp);
+                html += `<div class="notice-preview">`;
+                html += `<h4>📢 ${notice.title}</h4>`;
+                html += `<p style="margin: 10px 0; white-space: pre-wrap;">${notice.message}</p>`;
+                html += `<div style="font-size: 12px; color: #856404; margin-top: 10px;">Posted: ${date.toLocaleString()}</div>`;
+                html += `<button class="btn btn-danger btn-small" onclick="deleteNotice(${notice.id})">Delete</button>`;
+                html += `</div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function showAlert(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success';
+            alertDiv.textContent = message;
+            alertDiv.style.position = 'fixed';
+            alertDiv.style.top = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '10000';
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+
+        init();
+    </script>
+</body>
+</html>

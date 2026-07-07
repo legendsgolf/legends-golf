@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#F7931A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Legends Golf">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>Legends Golf</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --orange: #F7931A;
+            --orange-dark: #e88516;
+            --dark: #1a1a1a;
+            --light: #f5f5f5;
+            --green: #28a745;
+            --red: #dc3545;
+            --border: #e0e0e0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--light);
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        .app-header {
+            background: var(--dark);
+            color: white;
+            padding: 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .logo-row svg { width: 36px; height: 36px; }
+
+        .app-title { font-size: 22px; font-weight: bold; color: var(--orange); }
+
+        .sync-status {
+            font-size: 12px;
+            margin-top: 4px;
+            color: #aaa;
+        }
+        .sync-status.online { color: #6fdc8c; }
+        .sync-status.offline { color: #ffc107; }
+
+        .container { max-width: 560px; margin: 0 auto; padding: 14px; }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            padding: 18px;
+            margin-bottom: 14px;
+        }
+
+        h2 { color: var(--dark); font-size: 19px; margin-bottom: 14px; }
+
+        label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; color: #444; }
+
+        select {
+            width: 100%;
+            padding: 13px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            margin-bottom: 16px;
+        }
+
+        select:focus { outline: none; border-color: var(--orange); }
+
+        .btn {
+            display: block;
+            width: 100%;
+            background: var(--orange);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+        .btn:active { background: var(--orange-dark); }
+        .btn.secondary { background: var(--dark); }
+        .btn.outline {
+            background: white;
+            color: var(--dark);
+            border: 2px solid var(--border);
+            font-weight: 600;
+        }
+
+        .notice {
+            background: #fff3cd;
+            border: 2px solid var(--orange);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 14px;
+        }
+        .notice h3 { color: #856404; font-size: 15px; margin-bottom: 6px; }
+        .notice p { color: #856404; font-size: 14px; white-space: pre-wrap; }
+
+        .player-banner {
+            background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+            color: white;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 14px;
+        }
+        .player-banner h3 { font-size: 19px; }
+        .player-banner p { font-size: 13px; opacity: 0.95; margin-top: 3px; }
+
+        /* Vertical scorecard - one row per hole, no sideways scrolling */
+        table.scorecard {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .scorecard th {
+            background: var(--dark);
+            color: white;
+            padding: 8px 4px;
+            font-size: 12px;
+        }
+        .scorecard td {
+            border-bottom: 1px solid var(--border);
+            padding: 6px 3px;
+            text-align: center;
+        }
+        .scorecard .holecol { font-weight: 700; }
+        .scorecard .sicol { font-size: 11px; color: #999; }
+        .scorecard input {
+            width: 46px;
+            padding: 9px 2px;
+            text-align: center;
+            font-size: 17px;
+            font-weight: 700;
+            border: 2px solid var(--orange);
+            border-radius: 8px;
+        }
+        .scorecard input:focus { outline: none; background: #fff7ec; }
+        .pts { color: var(--orange-dark); font-weight: 700; font-style: italic; min-width: 22px; }
+        tr.subtotal td {
+            background: #f0f0f0;
+            font-weight: 700;
+            padding: 9px 3px;
+        }
+        tr.grandtotal td {
+            background: var(--dark);
+            color: var(--orange);
+            font-weight: 700;
+            font-size: 16px;
+            padding: 11px 3px;
+        }
+
+        .msg {
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 14px;
+        }
+        .msg.info { background: #e3f2fd; color: #1565c0; }
+        .msg.warn { background: #fff3cd; color: #856404; }
+        .msg.ok { background: #d4edda; color: #155724; }
+
+        .lb-table { width: 100%; border-collapse: collapse; }
+        .lb-table th, .lb-table td { padding: 10px 8px; border-bottom: 1px solid var(--border); text-align: left; font-size: 15px; }
+        .lb-table th { background: var(--dark); color: white; font-size: 13px; }
+        .lb-table tr.p1 td { background: #ffd70033; font-weight: 700; }
+        .lb-table tr.p2 td { background: #c0c0c04d; }
+        .lb-table tr.p3 td { background: #cd7f3233; }
+
+        .hidden { display: none; }
+
+        .install-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--dark);
+            color: white;
+            padding: 14px;
+            text-align: center;
+            z-index: 200;
+        }
+        .install-bar button {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 700;
+            margin: 8px 4px 0;
+        }
+        .install-bar .yes { background: var(--orange); color: white; }
+        .install-bar .no { background: transparent; color: white; border: 1px solid #666; }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <div class="logo-row">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="38" fill="#F7931A"/>
+                <text x="50" y="62" font-size="32" font-weight="bold" fill="#1a1a1a" text-anchor="middle" font-family="Arial">LG</text>
+            </svg>
+            <div class="app-title">Legends Golf</div>
+        </div>
+        <div class="sync-status" id="syncStatus">Connecting…</div>
+    </div>
+
+    <div class="container">
+        <div id="notices"></div>
+
+        <!-- LOGIN -->
+        <div id="loginView">
+            <div class="card">
+                <h2>Player Login</h2>
+                <div id="setupMsg" class="msg info">Loading tournament…</div>
+                <div id="loginForm" class="hidden">
+                    <label>Your name</label>
+                    <select id="selMe"></select>
+                    <label>Round</label>
+                    <select id="selRound"></select>
+                    <label>Your marker (playing partner who checks your card)</label>
+                    <select id="selPartner"></select>
+                    <button class="btn" onclick="startScoring()">Start Scoring →</button>
+                    <button class="btn outline" style="margin-top:10px" onclick="showLeaderboard()">📊 Live Leaderboard</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCORING -->
+        <div id="scoreView" class="hidden">
+            <div class="player-banner">
+                <h3 id="bannerName"></h3>
+                <p id="bannerSub"></p>
+            </div>
+            <div class="card">
+                <div class="msg info" style="font-size:13px">Enter <strong>your</strong> scores and <strong>your marker's</strong> scores. Everything saves on your phone instantly and syncs to the club automatically when you have signal.</div>
+                <table class="scorecard" id="scorecardTable"></table>
+                <button class="btn" style="margin-top:16px" onclick="finishRound()">✅ Submit Final Scorecard</button>
+                <button class="btn outline" style="margin-top:10px" onclick="showLeaderboard()">📊 Live Leaderboard</button>
+                <button class="btn secondary" style="margin-top:10px" onclick="backToLogin()">← Back</button>
+            </div>
+        </div>
+
+        <!-- LEADERBOARD -->
+        <div id="lbView" class="hidden">
+            <div class="card">
+                <h2>📊 Live Leaderboard</h2>
+                <div id="lbContent"></div>
+                <button class="btn secondary" style="margin-top:14px" onclick="closeLeaderboard()">← Back</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="installBar" class="install-bar hidden">
+        <strong>Add Legends Golf to your home screen?</strong><br>
+        <button class="yes" onclick="doInstall()">Install</button>
+        <button class="no" onclick="dismissInstall()">Not now</button>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script>
+        // ===== Firebase setup =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyBwxX5gwNp9bK4UWHpXsr3IZyvqspYRcvw",
+            authDomain: "legends-golf.firebaseapp.com",
+            projectId: "legends-golf",
+            storageBucket: "legends-golf.firebasestorage.app",
+            messagingSenderId: "562122549024",
+            appId: "1:562122549024:web:5c8d04bc53fd1995831945"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        // Offline mode: scores queue on the phone and send automatically when signal returns
+        db.enablePersistence({ synchronizeTabs: true }).catch(function(){ /* older browser - still works online */ });
+
+        const TOURN = db.collection('tournaments').doc('legends-golf');
+        const SCORES = TOURN.collection('scores');
+
+        // ===== App state =====
+        let setup = null;          // tournament config published by admin
+        let me = null;             // my player object
+        let partner = null;        // marker player object
+        let roundIndex = null;
+        let myScores = Array(18).fill(null);
+        let partnerScores = Array(18).fill(null);
+        let saveTimer = null;
+
+        // ===== Connection indicator =====
+        function updateSyncStatus() {
+            const el = document.getElementById('syncStatus');
+            if (navigator.onLine) {
+                el.textContent = '✓ Online — scores sync automatically';
+                el.className = 'sync-status online';
+            } else {
+                el.textContent = '📶 No signal — scores saved on phone, will sync later';
+                el.className = 'sync-status offline';
+            }
+        }
+        window.addEventListener('online', updateSyncStatus);
+        window.addEventListener('offline', updateSyncStatus);
+        updateSyncStatus();
+
+        // ===== Load tournament setup (live from cloud, cached for offline) =====
+        const cached = localStorage.getItem('legendsCloudSetup');
+        if (cached) { setup = JSON.parse(cached); onSetupReady(); }
+
+        TOURN.onSnapshot(function(doc) {
+            if (doc.exists) {
+                setup = doc.data();
+                localStorage.setItem('legendsCloudSetup', JSON.stringify(setup));
+                onSetupReady();
+            } else if (!setup) {
+                document.getElementById('setupMsg').className = 'msg warn';
+                document.getElementById('setupMsg').textContent =
+                    'Tournament not published yet. Ask the organiser to press "Publish to Cloud" on the admin page.';
+            }
+        }, function() { /* offline with no cache handled above */ });
+
+        function onSetupReady() {
+            document.getElementById('setupMsg').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+            renderNotices();
+
+            const selMe = document.getElementById('selMe');
+            const selRound = document.getElementById('selRound');
+            selMe.innerHTML = '<option value="">-- Choose your name --</option>';
+            setup.players.forEach(function(p) {
+                selMe.innerHTML += '<option value="' + p.id + '">' + p.name + ' (HCP ' + p.playingHandicap + ')</option>';
+            });
+            selRound.innerHTML = '<option value="">-- Choose round --</option>';
+            setup.rounds.forEach(function(r, i) {
+                const status = (setup.roundStatus && setup.roundStatus[i] === 'open') ? '' : ' (closed)';
+                selRound.innerHTML += '<option value="' + i + '">Round ' + r.number + status + '</option>';
+            });
+            selMe.onchange = fillPartners;
+            fillPartners();
+
+            // Remember last login
+            const saved = localStorage.getItem('legendsMe');
+            if (saved) {
+                const s = JSON.parse(saved);
+                selMe.value = s.meId; fillPartners();
+                document.getElementById('selRound').value = s.round;
+                document.getElementById('selPartner').value = s.partnerId;
+            }
+        }
+
+        function fillPartners() {
+            const meId = document.getElementById('selMe').value;
+            const sel = document.getElementById('selPartner');
+            sel.innerHTML = '<option value="">-- Choose marker --</option>';
+            setup.players.forEach(function(p) {
+                if (String(p.id) !== String(meId)) {
+                    sel.innerHTML += '<option value="' + p.id + '">' + p.name + '</option>';
+                }
+            });
+        }
+
+        function renderNotices() {
+            const box = document.getElementById('notices');
+            box.innerHTML = '';
+            const notices = (setup.controls && setup.controls.notices) || [];
+            notices.forEach(function(n) {
+                box.innerHTML += '<div class="notice"><h3>📢 ' + n.title + '</h3><p>' + n.message + '</p></div>';
+            });
+        }
+
+        // ===== Start scoring =====
+        function startScoring() {
+            const meId = parseInt(document.getElementById('selMe').value);
+            roundIndex = parseInt(document.getElementById('selRound').value);
+            const pId = parseInt(document.getElementById('selPartner').value);
+
+            if (isNaN(meId) || isNaN(roundIndex) || isNaN(pId)) {
+                alert('Please choose your name, the round, and your marker.');
+                return;
+            }
+            if (setup.roundStatus && setup.roundStatus[roundIndex] !== 'open') {
+                alert('This round is closed. Contact the organiser.');
+                return;
+            }
+
+            me = setup.players.find(function(p){ return p.id === meId; });
+            partner = setup.players.find(function(p){ return p.id === pId; });
+            localStorage.setItem('legendsMe', JSON.stringify({ meId: meId, round: roundIndex, partnerId: pId }));
+
+            // Restore any scores already on this phone
+            const local = localStorage.getItem(scoreKey());
+            if (local) {
+                const s = JSON.parse(local);
+                myScores = s.my; partnerScores = s.partner;
+            } else {
+                myScores = Array(18).fill(null);
+                partnerScores = Array(18).fill(null);
+            }
+
+            document.getElementById('bannerName').textContent = me.name + '  (HCP ' + me.playingHandicap + ')';
+            document.getElementById('bannerSub').textContent = 'Round ' + setup.rounds[roundIndex].number + '  •  Marker: ' + partner.name;
+
+            buildScorecard();
+            show('scoreView');
+        }
+
+        function scoreKey() { return 'legendsScores_r' + roundIndex + '_p' + me.id; }
+
+        // ===== Scorecard (vertical: one row per hole - phone friendly) =====
+        function buildScorecard() {
+            const t = document.getElementById('scorecardTable');
+            let h = '<tr><th>Hole</th><th>Par</th><th>' + firstName(me.name) + '</th><th>Pts</th><th>' + firstName(partner.name) + '</th><th>Pts</th></tr>';
+
+            for (let i = 0; i < 18; i++) {
+                const hole = setup.course.holes[i];
+                h += '<tr>';
+                h += '<td class="holecol">' + (i+1) + '<div class="sicol">SI ' + hole.strokeIndex + '</div></td>';
+                h += '<td>' + hole.par + '</td>';
+                h += '<td><input type="tel" inputmode="numeric" maxlength="2" id="my-' + i + '" value="' + (myScores[i] || '') + '" oninput="onScore()"></td>';
+                h += '<td class="pts" id="myp-' + i + '">-</td>';
+                h += '<td><input type="tel" inputmode="numeric" maxlength="2" id="pt-' + i + '" value="' + (partnerScores[i] || '') + '" oninput="onScore()"></td>';
+                h += '<td class="pts" id="ptp-' + i + '">-</td>';
+                h += '</tr>';
+                if (i === 8) h += subtotalRow('OUT', 'out');
+            }
+            h += subtotalRow('IN', 'in');
+            h += '<tr class="grandtotal"><td colspan="2">TOTAL</td><td id="my-tot">0</td><td id="myp-tot">0</td><td id="pt-tot">0</td><td id="ptp-tot">0</td></tr>';
+            t.innerHTML = h;
+            recalc();
+        }
+
+        function subtotalRow(label, id) {
+            return '<tr class="subtotal"><td colspan="2">' + label + '</td><td id="my-' + id + '">0</td><td id="myp-' + id + '">0</td><td id="pt-' + id + '">0</td><td id="ptp-' + id + '">0</td></tr>';
+        }
+
+        function firstName(n) { return n.split(' ')[0]; }
+
+        function onScore() {
+            recalc();
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(saveAll, 800);
+        }
+
+        function recalc() {
+            let m = { out:0, in:0, pout:0, pin:0 };
+            let p = { out:0, in:0, pout:0, pin:0 };
+
+            for (let i = 0; i < 18; i++) {
+                const hole = setup.course.holes[i];
+
+                myScores[i] = intOrNull(document.getElementById('my-' + i).value);
+                partnerScores[i] = intOrNull(document.getElementById('pt-' + i).value);
+
+                const mp = stablefordFor(myScores[i], me.playingHandicap, hole);
+                const pp = stablefordFor(partnerScores[i], partner.playingHandicap, hole);
+                document.getElementById('myp-' + i).textContent = (myScores[i] ? mp : '-');
+                document.getElementById('ptp-' + i).textContent = (partnerScores[i] ? pp : '-');
+
+                if (i < 9) {
+                    m.out += myScores[i] || 0; m.pout += myScores[i] ? mp : 0;
+                    p.out += partnerScores[i] || 0; p.pout += partnerScores[i] ? pp : 0;
+                } else {
+                    m.in += myScores[i] || 0; m.pin += myScores[i] ? mp : 0;
+                    p.in += partnerScores[i] || 0; p.pin += partnerScores[i] ? pp : 0;
+                }
+            }
+            setTxt('my-out', m.out); setTxt('myp-out', m.pout); setTxt('pt-out', p.out); setTxt('ptp-out', p.pout);
+            setTxt('my-in', m.in); setTxt('myp-in', m.pin); setTxt('pt-in', p.in); setTxt('ptp-in', p.pin);
+            setTxt('my-tot', m.out + m.in); setTxt('myp-tot', m.pout + m.pin);
+            setTxt('pt-tot', p.out + p.in); setTxt('ptp-tot', p.pout + p.pin);
+        }
+
+        function setTxt(id, v) { document.getElementById(id).textContent = v; }
+        function intOrNull(v) { const n = parseInt(v); return (n > 0 && n < 20) ? n : null; }
+
+        function strokesReceived(hcp, si) {
+            if (hcp <= 0) return 0;
+            if (hcp >= si) return Math.floor(hcp / 18) + 1;
+            if (hcp >= si - 18) return 1;
+            return 0;
+        }
+
+        function stablefordFor(gross, hcp, hole) {
+            if (!gross) return 0;
+            const net = gross - strokesReceived(hcp, hole.strokeIndex);
+            const rel = net - hole.par;
+            if (rel <= -2) return 4;
+            if (rel === -1) return 3;
+            if (rel === 0) return 2;
+            if (rel === 1) return 1;
+            return 0;
+        }
+
+        // ===== Save: phone first, then cloud =====
+        function saveAll(complete) {
+            // 1. Save on this phone (works with zero signal)
+            localStorage.setItem(scoreKey(), JSON.stringify({ my: myScores, partner: partnerScores }));
+
+            // 2. Send to cloud (Firestore queues this automatically if offline)
+            const stamp = Date.now();
+            SCORES.doc('r' + roundIndex + '_p' + me.id + '_by' + me.id).set({
+                round: roundIndex,
+                subjectId: me.id, subjectName: me.name,
+                enteredById: me.id, enteredByName: me.name,
+                scores: myScores, complete: !!complete, updatedAt: stamp
+            });
+            SCORES.doc('r' + roundIndex + '_p' + partner.id + '_by' + me.id).set({
+                round: roundIndex,
+                subjectId: partner.id, subjectName: partner.name,
+                enteredById: me.id, enteredByName: me.name,
+                scores: partnerScores, complete: !!complete, updatedAt: stamp
+            });
+        }
+
+        function finishRound() {
+            const holesLeft = myScores.filter(function(s){ return !s; }).length +
+                              partnerScores.filter(function(s){ return !s; }).length;
+            if (holesLeft > 0 && !confirm(holesLeft + ' score boxes are still empty. Submit anyway?')) return;
+            saveAll(true);
+            alert('✅ Scorecard submitted!\n\n' + (navigator.onLine
+                ? 'It has been sent to the club.'
+                : 'It is saved on your phone and will send automatically when you get signal.'));
+        }
+
+        function backToLogin() { show('loginView'); }
+
+        // ===== Live leaderboard (only if the organiser has switched it on) =====
+        function showLeaderboard() {
+            const box = document.getElementById('lbContent');
+            show('lbView');
+
+            if (!setup || !setup.controls || !setup.controls.liveLeaderboard) {
+                box.innerHTML = '<div class="msg warn">🔒 The live leaderboard hasn\'t been switched on by the organiser. Results at the presentation!</div>';
+                return;
+            }
+
+            const r = (roundIndex !== null) ? roundIndex : latestOpenRound();
+            box.innerHTML = '<div class="msg info">Loading…</div>';
+
+            SCORES.where('round', '==', r).get().then(function(snap) {
+                const best = {};   // subjectId -> preferred entry (self-entry wins)
+                snap.forEach(function(d) {
+                    const e = d.data();
+                    if (!best[e.subjectId] || e.enteredById === e.subjectId) best[e.subjectId] = e;
+                });
+                const rows = [];
+                Object.values(best).forEach(function(e) {
+                    const pl = setup.players.find(function(p){ return p.id === e.subjectId; });
+                    if (!pl) return;
+                    let pts = 0, holes = 0;
+                    for (let i = 0; i < 18; i++) {
+                        if (e.scores[i]) { pts += stablefordFor(e.scores[i], pl.playingHandicap, setup.course.holes[i]); holes++; }
+                    }
+                    rows.push({ name: pl.name, pts: pts, holes: holes });
+                });
+                rows.sort(function(a,b){ return b.pts - a.pts; });
+
+                if (rows.length === 0) { box.innerHTML = '<div class="msg info">No scores in yet for Round ' + (r+1) + '.</div>'; return; }
+
+                let h = '<p style="font-size:13px;color:#888;margin-bottom:10px">Round ' + (r+1) + ' — Net Stableford (thru holes played)</p>';
+                h += '<table class="lb-table"><tr><th>Pos</th><th>Player</th><th>Thru</th><th>Pts</th></tr>';
+                rows.forEach(function(row, i) {
+                    const cls = i === 0 ? 'p1' : i === 1 ? 'p2' : i === 2 ? 'p3' : '';
+                    h += '<tr class="' + cls + '"><td>' + (i+1) + '</td><td>' + row.name + '</td><td>' + row.holes + '</td><td><strong>' + row.pts + '</strong></td></tr>';
+                });
+                h += '</table>';
+                box.innerHTML = h;
+            }).catch(function() {
+                box.innerHTML = '<div class="msg warn">Couldn\'t load the leaderboard — check your signal and try again.</div>';
+            });
+        }
+
+        function latestOpenRound() {
+            let r = 0;
+            if (setup.roundStatus) {
+                Object.keys(setup.roundStatus).forEach(function(k) {
+                    if (setup.roundStatus[k] === 'open') r = parseInt(k);
+                });
+            }
+            return r;
+        }
+
+        function closeLeaderboard() {
+            show(me ? 'scoreView' : 'loginView');
+        }
+
+        function show(id) {
+            ['loginView','scoreView','lbView'].forEach(function(v) {
+                document.getElementById(v).classList.toggle('hidden', v !== id);
+            });
+        }
+
+        // ===== PWA install =====
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (!localStorage.getItem('installDismissed')) {
+                document.getElementById('installBar').classList.remove('hidden');
+            }
+        });
+        function doInstall() {
+            if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
+            document.getElementById('installBar').classList.add('hidden');
+        }
+        function dismissInstall() {
+            localStorage.setItem('installDismissed', '1');
+            document.getElementById('installBar').classList.add('hidden');
+        }
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(function(){});
+        }
+    </script>
+</body>
+</html>

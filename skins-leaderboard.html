@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skins Competition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .tab-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: #e9ecef;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        select {
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .leaderboard-table th,
+        .leaderboard-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .leaderboard-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .leaderboard-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .pos-1 {
+            background: #ffd70033 !important;
+            font-weight: bold;
+        }
+
+        .hole-by-hole {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .hole-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .hole-card.carryover {
+            border-left-color: #ffc107;
+            background: #fff9e6;
+        }
+
+        .hole-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .hole-card .winner {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin: 5px 0;
+        }
+
+        .hole-card .skins-count {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .hole-card .score {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .carryover-badge {
+            display: inline-block;
+            background: #fff3cd;
+            color: #856404;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .section-title {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #667eea;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Skins Competition</h1>
+            <p style="color: #6c757d;">Track gross and net skins with carryovers</p>
+        </div>
+
+        <div class="card">
+            <div class="tab-group">
+                <button class="tab-btn active" onclick="showView('daily-net')">Daily - Net Skins</button>
+                <button class="tab-btn" onclick="showView('daily-gross')">Daily - Gross Skins</button>
+                <button class="tab-btn" onclick="showView('overall-net')">Overall - Net Skins</button>
+                <button class="tab-btn" onclick="showView('overall-gross')">Overall - Gross Skins</button>
+            </div>
+
+            <div id="daily-controls">
+                <div class="form-group" style="max-width: 300px;">
+                    <label for="roundSelect">Select Round:</label>
+                    <select id="roundSelect" onchange="updateSkins()">
+                        <option value="">-- Select Round --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="skins-container">
+                <p style="color: #6c757d;">Select a round to view skins</p>
+            </div>
+
+            <!-- Hole Lookup Tool -->
+            <div id="hole-lookup-section" class="card" style="margin-top: 20px; display: none;">
+                <h2 style="color: #667eea; margin-bottom: 20px;">🔍 Hole Lookup Tool</h2>
+                <p style="color: #6c757d; margin-bottom: 15px;">Enter a hole number to see all players' scores and verify results</p>
+                
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
+                    <input type="number" id="holeLookupInput" min="1" max="18" placeholder="Enter hole number (1-18)" 
+                           style="padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 16px; width: 250px;">
+                    <button onclick="lookupHole()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        Look Up Hole
+                    </button>
+                </div>
+                
+                <div id="hole-lookup-results"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tournamentData = null;
+        let currentView = 'daily-net';
+        let selectedRound = null;
+
+        function loadData() {
+            const saved = localStorage.getItem('golfTournamentData');
+            if (saved) {
+                tournamentData = JSON.parse(saved);
+                populateRoundSelect();
+                
+                if (tournamentData.rounds.length > 0) {
+                    selectedRound = 0;
+                    document.getElementById('roundSelect').value = 0;
+                    updateSkins();
+                }
+            } else {
+                document.getElementById('skins-container').innerHTML = 
+                    '<div class="alert alert-info">No tournament data found. Please set up your tournament first.</div>';
+            }
+        }
+
+        function populateRoundSelect() {
+            const select = document.getElementById('roundSelect');
+            select.innerHTML = '<option value="">-- Select Round --</option>';
+            
+            tournamentData.rounds.forEach((round, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `Round ${round.number}${round.date ? ' - ' + round.date : ''}`;
+                select.appendChild(option);
+            });
+        }
+
+        function showView(view) {
+            currentView = view;
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const dailyControls = document.getElementById('daily-controls');
+            if (view.startsWith('daily')) {
+                dailyControls.style.display = 'block';
+            } else {
+                dailyControls.style.display = 'none';
+            }
+            
+            updateSkins();
+        }
+
+        function updateSkins() {
+            if (!tournamentData) return;
+            
+            const roundIndex = parseInt(document.getElementById('roundSelect').value);
+            
+            if (currentView.startsWith('daily')) {
+                if (isNaN(roundIndex)) {
+                    document.getElementById('skins-container').innerHTML = 
+                        '<p style="color: #6c757d;">Select a round to view skins</p>';
+                    return;
+                }
+                selectedRound = roundIndex;
+                const useNet = currentView === 'daily-net';
+                displayDailySkins(roundIndex, useNet);
+            } else {
+                const useNet = currentView === 'overall-net';
+                displayOverallSkins(useNet);
+            }
+        }
+
+        function displayDailySkins(roundIndex, useNet) {
+            const skinsData = calculateDailySkins(roundIndex, useNet, null);
+            renderSkins(skinsData, useNet, `Round ${tournamentData.rounds[roundIndex].number}`, false);
+        }
+
+        function displayOverallSkins(useNet) {
+            let carryover = 0;
+            const allSkins = [];
+            const playerTotals = new Map();
+            
+            // Process each round in sequence
+            for (let r = 0; r < tournamentData.rounds.length; r++) {
+                const roundSkins = calculateDailySkins(r, useNet, carryover);
+                
+                // Track player totals
+                roundSkins.holeWinners.forEach(hw => {
+                    if (hw.winner) {
+                        const current = playerTotals.get(hw.winner) || 0;
+                        playerTotals.set(hw.winner, current + hw.skinsWon);
+                    }
+                });
+                
+                // Update carryover for next round
+                carryover = roundSkins.carryoverToNext;
+                allSkins.push(roundSkins);
+            }
+            
+            // Create combined results
+            const combinedResults = {
+                holeWinners: [],
+                playerTotals: Array.from(playerTotals.entries())
+                    .map(([name, count]) => ({ playerName: name, skinsWon: count }))
+                    .sort((a, b) => b.skinsWon - a.skinsWon),
+                carryoverToNext: carryover
+            };
+            
+            renderSkins(combinedResults, useNet, 'Overall Tournament', true);
+        }
+
+        function calculateDailySkins(roundIndex, useNet, initialCarryover = 0) {
+            const round = tournamentData.rounds[roundIndex];
+            if (!round.scores) {
+                return { holeWinners: [], playerTotals: [], carryoverToNext: 0 };
+            }
+            
+            const holeWinners = [];
+            const playerSkinsCount = new Map();
+            let carryover = initialCarryover || 0;
+            
+            for (let holeNum = 0; holeNum < 18; holeNum++) {
+                const hole = tournamentData.course.holes[holeNum];
+                const holeScores = [];
+                
+                // Get all player scores for this hole
+                tournamentData.players.forEach(player => {
+                    if (round.scores[player.id]) {
+                        const grossScore = round.scores[player.id][holeNum];
+                        if (grossScore && grossScore > 0) {
+                            let scoreToCompare = grossScore;
+                            
+                            if (useNet) {
+                                const strokesReceived = getStrokesReceived(player.playingHandicap, hole.strokeIndex);
+                                scoreToCompare = grossScore - strokesReceived;
+                            }
+                            
+                            holeScores.push({
+                                playerId: player.id,
+                                playerName: player.name,
+                                grossScore: grossScore,
+                                scoreToCompare: scoreToCompare
+                            });
+                        }
+                    }
+                });
+                
+                if (holeScores.length === 0) continue;
+                
+                // Find lowest score
+                const lowestScore = Math.min(...holeScores.map(s => s.scoreToCompare));
+                const winners = holeScores.filter(s => s.scoreToCompare === lowestScore);
+                
+                // Increment carryover
+                carryover += 1;
+                
+                if (winners.length === 1) {
+                    // We have a winner!
+                    const winner = winners[0];
+                    const current = playerSkinsCount.get(winner.playerName) || 0;
+                    playerSkinsCount.set(winner.playerName, current + carryover);
+                    
+                    holeWinners.push({
+                        hole: holeNum + 1,
+                        winner: winner.playerName,
+                        score: lowestScore,
+                        skinsWon: carryover
+                    });
+                    
+                    carryover = 0; // Reset carryover
+                } else {
+                    // Tied - carry over (carryover already incremented above)
+                    holeWinners.push({
+                        hole: holeNum + 1,
+                        winner: null,
+                        halved: true,
+                        carryover: carryover
+                    });
+                }
+            }
+            
+            // Convert to array and sort
+            const playerTotals = Array.from(playerSkinsCount.entries())
+                .map(([name, count]) => ({ playerName: name, skinsWon: count }))
+                .sort((a, b) => b.skinsWon - a.skinsWon);
+            
+            return {
+                holeWinners: holeWinners,
+                playerTotals: playerTotals,
+                carryoverToNext: carryover
+            };
+        }
+
+        function renderSkins(skinsData, useNet, title, isOverall) {
+            const container = document.getElementById('skins-container');
+            
+            // Show hole lookup tool for daily view
+            const lookupSection = document.getElementById('hole-lookup-section');
+            if (!isOverall && selectedRound !== null) {
+                lookupSection.style.display = 'block';
+            } else {
+                lookupSection.style.display = 'none';
+            }
+            
+            let html = `<h2>${title} - ${useNet ? 'Net' : 'Gross'} Skins</h2>`;
+            
+            // Player totals leaderboard
+            if (skinsData.playerTotals.length > 0) {
+                html += '<div class="section-title">Skins Leaderboard</div>';
+                html += '<table class="leaderboard-table"><thead><tr>';
+                html += '<th>Position</th><th>Player</th><th>Total Skins Won</th>';
+                html += '</tr></thead><tbody>';
+                
+                skinsData.playerTotals.forEach((player, index) => {
+                    const rowClass = index === 0 ? 'pos-1' : '';
+                    html += `<tr class="${rowClass}">`;
+                    html += `<td>${index + 1}</td>`;
+                    html += `<td>${player.playerName}</td>`;
+                    html += `<td><strong>${player.skinsWon}</strong></td>`;
+                    html += '</tr>';
+                });
+                
+                html += '</tbody></table>';
+                
+                // PRESENTATION MODE - Detailed breakdown per player
+                html += '<div class="section-title">📢 Presentation Details (for announcing)</div>';
+                html += '<div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">';
+                
+                skinsData.playerTotals.forEach((player, index) => {
+                    const playerSkins = skinsData.holeWinners.filter(hw => hw.winner === player.playerName);
+                    
+                    html += `<div style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid ${index === 0 ? '#ffd700' : '#667eea'};">`;
+                    html += `<h3 style="color: #667eea; margin-bottom: 10px;">${player.playerName} - ${player.skinsWon} skin${player.skinsWon > 1 ? 's' : ''}</h3>`;
+                    
+                    if (playerSkins.length > 0) {
+                        html += '<ul style="list-style: none; padding: 0;">';
+                        playerSkins.forEach(skin => {
+                            // Get detailed hole info
+                            const holeDetail = getHoleDetail(selectedRound, skin.hole - 1, player.playerName, useNet);
+                            html += `<li style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">`;
+                            html += `<strong>Hole ${skin.hole}:</strong> `;
+                            html += `Score ${holeDetail.grossScore}`;
+                            if (useNet && holeDetail.netScore !== holeDetail.grossScore) {
+                                html += ` (Net ${holeDetail.netScore})`;
+                            }
+                            html += ` = ${holeDetail.stablefordPoints} Stableford point${holeDetail.stablefordPoints !== 1 ? 's' : ''}`;
+                            if (skin.skinsWon > 1) {
+                                html += ` <span style="background: #fff3cd; padding: 2px 6px; border-radius: 3px; font-size: 12px;">+${skin.skinsWon - 1} carryover</span>`;
+                            }
+                            html += ` → <strong style="color: #28a745;">${skin.skinsWon} skin${skin.skinsWon > 1 ? 's' : ''}</strong>`;
+                            html += '</li>';
+                        });
+                        html += '</ul>';
+                    }
+                    
+                    html += '</div>';
+                });
+                
+                html += '</div>';
+            } else {
+                html += '<p style="color: #6c757d; margin: 20px 0;">No skins won yet in this round.</p>';
+            }
+            
+            // Halved holes report
+            if (!isOverall && skinsData.holeWinners.length > 0) {
+                const halvedHoles = skinsData.holeWinners.filter(hw => hw.halved);
+                
+                if (halvedHoles.length > 0) {
+                    html += '<div class="section-title">⚠️ Halved Holes (No Winner)</div>';
+                    html += '<div style="background: #fff9e6; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">';
+                    html += '<p style="margin-bottom: 10px;"><strong>These holes were tied and carried over:</strong></p>';
+                    html += '<ul style="margin-left: 20px;">';
+                    halvedHoles.forEach(hw => {
+                        html += `<li style="margin: 5px 0;">Hole ${hw.hole} - Carried ${hw.carryover} skin${hw.carryover > 1 ? 's' : ''} forward</li>`;
+                    });
+                    html += '</ul></div>';
+                }
+            }
+            
+            // Carryover notice
+            if (skinsData.carryoverToNext > 0) {
+                html += `<div class="alert alert-info" style="margin-top: 20px;">
+                    <strong>⏭️ Carryover to Next Round:</strong> ${skinsData.carryoverToNext} skin(s) will be added to the first hole of the next round
+                </div>`;
+            }
+            
+            // Hole-by-hole breakdown
+            if (!isOverall && skinsData.holeWinners.length > 0) {
+                const winnersOnly = skinsData.holeWinners.filter(hw => hw.winner);
+                
+                if (winnersOnly.length > 0) {
+                    html += '<div class="section-title">Hole-by-Hole Winners</div>';
+                    html += '<div class="hole-by-hole">';
+                    
+                    winnersOnly.forEach(hw => {
+                        const holeDetail = getHoleDetail(selectedRound, hw.hole - 1, hw.winner, useNet);
+                        html += `<div class="hole-card ${hw.skinsWon > 1 ? 'carryover' : ''}">`;
+                        html += `<h4>Hole ${hw.hole}</h4>`;
+                        html += `<div class="winner">${hw.winner}</div>`;
+                        html += `<div class="score">Score: ${holeDetail.grossScore}`;
+                        if (useNet && holeDetail.netScore !== holeDetail.grossScore) {
+                            html += ` (Net ${holeDetail.netScore})`;
+                        }
+                        html += '</div>';
+                        html += `<div style="color: #667eea; font-size: 13px; margin: 3px 0;">${holeDetail.stablefordPoints} Stableford pts</div>`;
+                        html += `<div class="skins-count">Won: ${hw.skinsWon} skin${hw.skinsWon > 1 ? 's' : ''}</div>`;
+                        if (hw.skinsWon > 1) {
+                            html += `<span class="carryover-badge">+ ${hw.skinsWon - 1} carryover</span>`;
+                        }
+                        html += '</div>';
+                    });
+                    
+                    html += '</div>';
+                }
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function getHoleDetail(roundIndex, holeIndex, playerName, useNet) {
+            const round = tournamentData.rounds[roundIndex];
+            const hole = tournamentData.course.holes[holeIndex];
+            const player = tournamentData.players.find(p => p.name === playerName);
+            
+            if (!player || !round.scores[player.id]) {
+                return { grossScore: 0, netScore: 0, stablefordPoints: 0 };
+            }
+            
+            const grossScore = round.scores[player.id][holeIndex];
+            let netScore = grossScore;
+            let stablefordPoints = 0;
+            
+            if (grossScore > 0) {
+                const strokesReceived = getStrokesReceived(player.playingHandicap, hole.strokeIndex);
+                netScore = grossScore - strokesReceived;
+                
+                const relative = netScore - hole.par;
+                if (relative <= -2) stablefordPoints = 4;
+                else if (relative === -1) stablefordPoints = 3;
+                else if (relative === 0) stablefordPoints = 2;
+                else if (relative === 1) stablefordPoints = 1;
+            }
+            
+            return {
+                grossScore: grossScore,
+                netScore: netScore,
+                stablefordPoints: stablefordPoints
+            };
+        }
+
+        function lookupHole() {
+            const holeNum = parseInt(document.getElementById('holeLookupInput').value);
+            const resultsDiv = document.getElementById('hole-lookup-results');
+            
+            if (!holeNum || holeNum < 1 || holeNum > 18) {
+                resultsDiv.innerHTML = '<p style="color: #dc3545;">Please enter a valid hole number (1-18)</p>';
+                return;
+            }
+            
+            if (selectedRound === null) {
+                resultsDiv.innerHTML = '<p style="color: #dc3545;">Please select a round first</p>';
+                return;
+            }
+            
+            const useNet = currentView.includes('net');
+            const holeIndex = holeNum - 1;
+            const hole = tournamentData.course.holes[holeIndex];
+            const round = tournamentData.rounds[selectedRound];
+            
+            let html = `<div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #667eea;">`;
+            html += `<h3 style="color: #667eea; margin-bottom: 15px;">Hole ${holeNum} Results (${useNet ? 'Net' : 'Gross'})</h3>`;
+            html += `<p style="color: #6c757d; margin-bottom: 15px;">Par ${hole.par}, Stroke Index ${hole.strokeIndex}</p>`;
+            
+            // Get all players' scores
+            const allScores = [];
+            tournamentData.players.forEach(player => {
+                if (round.scores[player.id]) {
+                    const detail = getHoleDetail(selectedRound, holeIndex, player.name, useNet);
+                    if (detail.grossScore > 0) {
+                        allScores.push({
+                            playerName: player.name,
+                            grossScore: detail.grossScore,
+                            netScore: detail.netScore,
+                            stablefordPoints: detail.stablefordPoints,
+                            scoreToCompare: useNet ? detail.netScore : detail.grossScore
+                        });
+                    }
+                }
+            });
+            
+            // Sort by score
+            allScores.sort((a, b) => a.scoreToCompare - b.scoreToCompare);
+            
+            if (allScores.length === 0) {
+                html += '<p style="color: #6c757d;">No scores recorded for this hole yet.</p>';
+            } else {
+                const lowestScore = allScores[0].scoreToCompare;
+                const winners = allScores.filter(s => s.scoreToCompare === lowestScore);
+                
+                html += '<table class="leaderboard-table"><thead><tr>';
+                html += '<th>Player</th><th>Gross Score</th>';
+                if (useNet) html += '<th>Net Score</th>';
+                html += '<th>Stableford Pts</th><th>Result</th>';
+                html += '</tr></thead><tbody>';
+                
+                allScores.forEach(score => {
+                    const isWinner = score.scoreToCompare === lowestScore;
+                    const isTied = winners.length > 1 && isWinner;
+                    const rowStyle = isWinner ? (isTied ? 'background: #fff3cd;' : 'background: #d4edda;') : '';
+                    
+                    html += `<tr style="${rowStyle}">`;
+                    html += `<td><strong>${score.playerName}</strong></td>`;
+                    html += `<td>${score.grossScore}</td>`;
+                    if (useNet) html += `<td>${score.netScore}</td>`;
+                    html += `<td>${score.stablefordPoints}</td>`;
+                    html += `<td>`;
+                    if (isTied) {
+                        html += '<span style="color: #856404; font-weight: bold;">TIED (Halved)</span>';
+                    } else if (isWinner) {
+                        html += '<span style="color: #28a745; font-weight: bold;">WINNER</span>';
+                    } else {
+                        html += '-';
+                    }
+                    html += '</td></tr>';
+                });
+                
+                html += '</tbody></table>';
+                
+                if (winners.length > 1) {
+                    html += `<p style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 6px; color: #856404;">`;
+                    html += `<strong>⚠️ This hole was HALVED</strong> - ${winners.length} players tied with ${useNet ? 'net' : 'gross'} score of ${lowestScore}. Skin carried forward.`;
+                    html += '</p>';
+                }
+            }
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+
+        function getStrokesReceived(playingHandicap, strokeIndex) {
+            if (playingHandicap <= 0) return 0;
+            if (playingHandicap >= strokeIndex) {
+                return Math.floor(playingHandicap / 18) + 1;
+            } else if (playingHandicap >= strokeIndex - 18) {
+                return 1;
+            }
+            return 0;
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
