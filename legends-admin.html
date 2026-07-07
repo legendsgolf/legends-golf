@@ -121,7 +121,16 @@
             <h2>Step 4 — Import into Your Tournament System</h2>
             <p class="sub">Pulls all matched scorecards into this laptop's tournament data. After importing, ALL your existing pages work as normal — Stableford, Skins, Eclectic, Presentation, everything.</p>
             <button class="btn green" onclick="importMatched()">⬇️ Import All Matched Scorecards</button>
+            <button class="btn dark" onclick="importAmbrose()">⬇️ Import Ambrose Team Cards</button>
             <div id="importResult"></div>
+            <div id="ambroseResult"></div>
+        </div>
+
+        <!-- STEP 5: FIX A SCORE -->
+        <div class="card">
+            <h2>Step 5 — Fix a Score</h2>
+            <p class="sub">Wrong number on a card? Edit any hole for any player. The change flows through every competition automatically and corrects the cloud copy so it can't be overwritten.</p>
+            <a href="score-editor.html"><button class="btn dark">✏️ Open Score Editor</button></a>
         </div>
     </div>
 
@@ -140,6 +149,7 @@
         const db = firebase.firestore();
         const TOURN = db.collection('tournaments').doc('legends-golf');
         const SCORES = TOURN.collection('scores');
+        const AMBROSE = TOURN.collection('ambroseScores');
 
         let entries = [];       // all score documents from cloud
         let cloudSetup = null;
@@ -164,6 +174,41 @@
         }
 
         // ===== Publish =====
+        function getAmbroseTeams() {
+            const td = JSON.parse(localStorage.getItem('golfTeamsData') || '{}');
+            const out = {};
+            if (td.ambrose) {
+                Object.keys(td.ambrose).forEach(function(r) {
+                    out[r] = { teams: (td.ambrose[r].teams || []).map(function(tm) {
+                        return {
+                            name: tm.name,
+                            teamHandicap: tm.teamHandicap,
+                            players: tm.players.map(function(p){ return { name: p.name, playingHandicap: p.playingHandicap }; })
+                        };
+                    }) };
+                });
+            }
+            return out;
+        }
+
+        function importAmbrose() {
+            const out = document.getElementById('ambroseResult');
+            AMBROSE.get().then(function(snap) {
+                const local = JSON.parse(localStorage.getItem('ambroseScores') || '{}');
+                let n = 0;
+                snap.forEach(function(d) {
+                    const e = d.data();
+                    local[e.round] = local[e.round] || {};
+                    local[e.round][e.teamIndex] = e.scores;
+                    n++;
+                });
+                localStorage.setItem('ambroseScores', JSON.stringify(local));
+                out.innerHTML = '<div class="msg ok">✅ Imported ' + n + ' Ambrose team card(s). Team Results and the Presentation now have them.</div>';
+            }).catch(function(e) {
+                out.innerHTML = '<div class="msg err">Couldn\'t reach the cloud: ' + e.message + '</div>';
+            });
+        }
+
         function publishSetup() {
             const t = localData();
             if (!t || !t.players || t.players.length === 0) {
@@ -182,6 +227,7 @@
                     liveLeaderboard: !!(c.visibility && c.visibility.liveLeaderboard),
                     notices: (c.notices || []).map(function(n){ return { title: n.title, message: n.message }; })
                 },
+                ambrose: getAmbroseTeams(),
                 publishedAt: Date.now()
             };
 

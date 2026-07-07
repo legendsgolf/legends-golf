@@ -3,291 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Golf Tournament System</title>
+    <title>Legends Golf HQ</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --orange: #F7931A; --dark: #1a1a1a; --green: #28a745; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: var(--dark);
             min-height: 100vh;
             padding: 20px;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        .container { max-width: 860px; margin: 0 auto; }
 
         .header {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-            text-align: center;
+            background: var(--orange);
+            color: var(--dark);
+            padding: 26px;
+            border-radius: 16px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
+        .header svg { width: 56px; height: 56px; flex-shrink: 0; }
+        .header h1 { font-size: 28px; }
+        .header p { font-weight: 600; margin-top: 3px; }
 
-        h1 {
-            color: #1e3c72;
-            font-size: 42px;
-            margin-bottom: 10px;
-        }
+        .card { background: white; border-radius: 14px; padding: 22px; margin-bottom: 16px; }
+        .card h2 { font-size: 19px; color: var(--dark); margin-bottom: 4px; }
+        .card .sub { color: #777; font-size: 14px; margin-bottom: 14px; }
 
-        .subtitle {
-            color: #6c757d;
-            font-size: 18px;
-        }
-
-        .section {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .section h2 {
-            color: #2a5298;
-            font-size: 24px;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .link-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .link-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.3s;
-            border-left: 4px solid #2a5298;
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+        a.tile {
             display: block;
+            background: #f7f7f7;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            padding: 14px;
+            text-decoration: none;
+            color: var(--dark);
         }
+        a.tile:hover { border-color: var(--orange); }
+        a.tile strong { display: block; font-size: 15px; }
+        a.tile span { font-size: 12px; color: #888; }
+        a.tile.primary { background: var(--orange); border-color: var(--orange); color: white; }
+        a.tile.primary span { color: #fff3e0; }
 
-        .link-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            background: #e9ecef;
-        }
+        .runsheet li { margin: 8px 0 8px 20px; font-size: 15px; color: #333; }
+        .runsheet strong { color: var(--dark); }
+        .phase { font-weight: 700; color: var(--orange); margin-top: 14px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .link-card h3 {
-            color: #1e3c72;
-            font-size: 18px;
-            margin-bottom: 8px;
-        }
-
-        .link-card p {
-            color: #6c757d;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .icon {
-            font-size: 32px;
+        .linkrow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f7f7f7;
+            border-radius: 10px;
+            padding: 12px;
             margin-bottom: 10px;
+            flex-wrap: wrap;
         }
-
-        .workflow {
-            background: #e7f3ff;
-            padding: 20px;
+        .linkrow .name { font-weight: 700; min-width: 120px; }
+        .linkrow code { font-size: 12px; color: #666; word-break: break-all; flex: 1; }
+        .copybtn {
+            background: var(--green);
+            color: white;
+            border: none;
+            padding: 9px 16px;
             border-radius: 8px;
-            margin-top: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
         }
+        .copybtn:active { opacity: 0.8; }
 
-        .workflow h3 {
-            color: #1e3c72;
-            margin-bottom: 15px;
-        }
-
-        .workflow ol {
-            margin-left: 20px;
-            line-height: 2;
-        }
-
-        .workflow li {
-            color: #333;
-        }
+        .note { background: #fff3cd; color: #856404; border-radius: 10px; padding: 12px 14px; font-size: 13px; margin-top: 12px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>⛳ Golf Tournament Management System</h1>
-            <p class="subtitle">Complete tournament management with all competition formats</p>
-        </div>
-
-        <!-- Getting Started -->
-        <div class="section">
-            <h2>🚀 Getting Started</h2>
-            <div class="link-grid">
-                <a href="golf-tournament-SIMPLE-SETUP.html" class="link-card">
-                    <div class="icon">⚡</div>
-                    <h3>Quick Setup</h3>
-                    <p>One-click setup with 8 test players and sample scores. Perfect for testing!</p>
-                </a>
-                
-                <a href="golf-tournament-admin.html" class="link-card">
-                    <div class="icon">⚙️</div>
-                    <h3>Admin Panel</h3>
-                    <p>Main admin interface. Setup tournament, manage players, accept scorecards, configure rounds.</p>
-                </a>
-            </div>
-
-            <div class="workflow">
-                <h3>First Time Setup:</h3>
-                <ol>
-                    <li><strong>Quick Setup</strong> - Click one button to create test tournament</li>
-                    <li><strong>Admin Panel</strong> - Review test data, or clear and enter your real tournament</li>
-                    <li><strong>Player Interface</strong> - Test score entry</li>
-                    <li><strong>View Results</strong> - Check all the leaderboards work correctly</li>
-                </ol>
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="42" fill="#1a1a1a"/>
+                <circle cx="50" cy="50" r="36" fill="#F7931A"/>
+                <text x="50" y="62" font-size="30" font-weight="bold" fill="#1a1a1a" text-anchor="middle" font-family="Arial">LG</text>
+            </svg>
+            <div>
+                <h1>Legends Golf HQ</h1>
+                <p>Everything for running your event — bookmark this page</p>
             </div>
         </div>
 
-        <!-- Core Operations -->
-        <div class="section">
-            <h2>📝 Score Entry & Management</h2>
-            <div class="link-grid">
-                <a href="golf-tournament-player.html" class="link-card">
-                    <div class="icon">👤</div>
-                    <h3>Player Scoring</h3>
-                    <p>Players enter their scores with live Stableford calculation. Auto-save and partner validation.</p>
-                </a>
-                
-                <a href="golf-tournament-admin.html" class="link-card">
-                    <div class="icon">✅</div>
-                    <h3>Scorecard Acceptance</h3>
-                    <p>Admin reviews and accepts validated scorecards. Shows mismatches and Stableford points.</p>
-                </a>
+        <!-- RUN SHEET -->
+        <div class="card">
+            <h2>📋 Tournament Day Run Sheet</h2>
+            <p class="sub">The whole event in one list. Everything below happens on this laptop, in this browser.</p>
+            <div class="runsheet">
+                <div class="phase">Before the event</div>
+                <li><strong>Tournament Setup</strong> — players, handicaps, course, rounds</li>
+                <li><strong>Admin Controls</strong> — open Round 1, post any notices</li>
+                <li><strong>Cloud Admin → Publish to Cloud</strong> — sends everything to players' phones</li>
+                <li>Send the <strong>Player App link</strong> (below) to the group</li>
+                <div class="phase">During the round</div>
+                <li>Watch scores arrive live in <strong>Cloud Admin</strong> — you do nothing</li>
+                <li>Flip the <strong>Live Leaderboard</strong> switch on/off whenever you like</li>
+                <div class="phase">After the round</div>
+                <li><strong>Cloud Admin → Import All Matched Scorecards</strong></li>
+                <li>Fix any wrong numbers in the <strong>Score Editor</strong></li>
+                <li>Open the results boards, then run the <strong>Presentation</strong> at dinner</li>
+                <li><strong>Back up:</strong> export your data (Tournament Setup page) to a USB or email it to yourself</li>
             </div>
         </div>
 
-        <!-- Individual Competitions -->
-        <div class="section">
-            <h2>🏆 Individual Competitions</h2>
-            <div class="link-grid">
-                <a href="stableford-leaderboard.html" class="link-card">
-                    <div class="icon">📊</div>
-                    <h3>Stableford</h3>
-                    <p>Gross & Net Stableford with countback. Daily and overall leaderboards.</p>
-                </a>
-                
-                <a href="skins-leaderboard.html" class="link-card">
-                    <div class="icon">🎯</div>
-                    <h3>Skins</h3>
-                    <p>Gross & Net skins with carryovers. Hole lookup tool and presentation details.</p>
-                </a>
-                
-                <a href="eclectic.html" class="link-card">
-                    <div class="icon">🏅</div>
-                    <h3>Eclectic</h3>
-                    <p>Best net score per hole across all rounds. Shows player improvement.</p>
-                </a>
+        <!-- PLAYER LINKS -->
+        <div class="card">
+            <h2>📱 Links to Send Players</h2>
+            <p class="sub">These are the only two links players ever need.</p>
+            <div class="linkrow">
+                <span class="name">Player App</span>
+                <code id="link1">https://legendsgolf.github.io/legends-golf/legends-player.html</code>
+                <button class="copybtn" onclick="copyLink('link1', this)">Copy</button>
+            </div>
+            <div class="linkrow">
+                <span class="name">Ambrose (captains)</span>
+                <code id="link2">https://legendsgolf.github.io/legends-golf/legends-ambrose.html</code>
+                <button class="copybtn" onclick="copyLink('link2', this)">Copy</button>
+            </div>
+            <div class="note">Tip for players: open the link once, then "Add to Home Screen" — it becomes an app icon and works with no signal on the course.</div>
+        </div>
+
+        <!-- ADMIN TOOLS -->
+        <div class="card">
+            <h2>🖥️ Admin Tools (this laptop only)</h2>
+            <p class="sub">Your side of the system. Always use this same browser.</p>
+            <div class="grid">
+                <a class="tile primary" href="legends-admin.html"><strong>☁️ Cloud Admin</strong><span>Publish, live scores, imports — your main screen</span></a>
+                <a class="tile" href="golf-tournament-admin.html"><strong>Tournament Setup</strong><span>Players, course, rounds, backups</span></a>
+                <a class="tile" href="admin-controls.html"><strong>Admin Controls</strong><span>Open/close rounds, notices, toggles</span></a>
+                <a class="tile" href="score-editor.html"><strong>✏️ Score Editor</strong><span>Fix any score, any player, any hole</span></a>
+                <a class="tile" href="team-management.html"><strong>Team Management</strong><span>Create Best Ball &amp; Ambrose teams</span></a>
+                <a class="tile" href="group-generator.html"><strong>Group Generator</strong><span>Auto tee times from standings</span></a>
             </div>
         </div>
 
-        <!-- Team Competitions -->
-        <div class="section">
-            <h2>👥 Team Competitions</h2>
-            <div class="link-grid">
-                <a href="team-management.html" class="link-card">
-                    <div class="icon">⚙️</div>
-                    <h3>Team Setup</h3>
-                    <p>Create Best Ball and Ambrose teams. Auto-calculates team handicaps.</p>
-                </a>
-                
-                <a href="team-results.html" class="link-card">
-                    <div class="icon">🏆</div>
-                    <h3>Team Results</h3>
-                    <p>View Best Ball and Ambrose leaderboards. Best Ball uses individual scores automatically.</p>
-                </a>
+        <!-- RESULTS -->
+        <div class="card">
+            <h2>🏆 Results Boards</h2>
+            <p class="sub">Open after importing scorecards in Cloud Admin.</p>
+            <div class="grid">
+                <a class="tile" href="stableford-leaderboard.html"><strong>Stableford</strong><span>Gross &amp; net, daily &amp; overall</span></a>
+                <a class="tile" href="skins-leaderboard.html"><strong>Skins</strong><span>Carryovers, hole lookup</span></a>
+                <a class="tile" href="eclectic.html"><strong>Eclectic</strong><span>Best net per hole, all rounds</span></a>
+                <a class="tile" href="special-prizes.html"><strong>Special Prizes</strong><span>Long drives &amp; nearest the pin</span></a>
+                <a class="tile" href="team-results.html"><strong>Team Results</strong><span>Best Ball &amp; Ambrose</span></a>
+                <a class="tile" href="presentation.html"><strong>🎤 Presentation</strong><span>Winner announcements for dinner</span></a>
             </div>
         </div>
 
-        <!-- Special Features -->
-        <div class="section">
-            <h2>⭐ Special Prizes & Presentations</h2>
-            <div class="link-grid">
-                <a href="special-prizes.html" class="link-card">
-                    <div class="icon">🏌️</div>
-                    <h3>Special Prizes</h3>
-                    <p>Long Drives (above/below handicap) and Nearest to Pin with distances.</p>
-                </a>
-                
-                <a href="presentation.html" class="link-card">
-                    <div class="icon">🎉</div>
-                    <h3>Presentation Page</h3>
-                    <p><strong>⭐ Start here for announcements!</strong> Shows all winners with podiums and details. Print-ready.</p>
-                </a>
-            </div>
-        </div>
-
-        <!-- How It Works -->
-        <div class="section">
-            <h2>📖 Tournament Workflow</h2>
-            <div class="workflow">
-                <h3>Complete Tournament Process:</h3>
-                <ol>
-                    <li><strong>Setup</strong> - Admin creates tournament, adds players, configures course</li>
-                    <li><strong>Score Entry</strong> - Players enter scores via player interface (auto-validates with partner)</li>
-                    <li><strong>Acceptance</strong> - Admin reviews and accepts validated scorecards</li>
-                    <li><strong>View Results</strong> - Check individual leaderboards (Stableford, Skins, Eclectic)</li>
-                    <li><strong>Team Setup</strong> - Create teams for Best Ball and Ambrose (optional)</li>
-                    <li><strong>Special Prizes</strong> - Enter long drive and NTP winners (optional)</li>
-                    <li><strong>Presentation</strong> - Open presentation page, select round, announce winners!</li>
-                    <li><strong>Next Round</strong> - Repeat for additional rounds</li>
-                </ol>
-            </div>
-        </div>
-
-        <!-- Key Features -->
-        <div class="section">
-            <h2>✨ Key Features</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                    <h4 style="color: #1e3c72; margin-bottom: 10px;">✅ Anti-Cheat System</h4>
-                    <p style="font-size: 14px; color: #666;">Players validate each other's scores. Admin must accept before locking.</p>
-                </div>
-                
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                    <h4 style="color: #1e3c72; margin-bottom: 10px;">💾 Browser Storage</h4>
-                    <p style="font-size: 14px; color: #666;">All data saved in browser. No server needed. Export/import as backup.</p>
-                </div>
-                
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                    <h4 style="color: #1e3c72; margin-bottom: 10px;">📱 Mobile Friendly</h4>
-                    <p style="font-size: 14px; color: #666;">Players can enter scores on their phones on the course.</p>
-                </div>
-                
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                    <h4 style="color: #1e3c72; margin-bottom: 10px;">🎯 Live Stableford</h4>
-                    <p style="font-size: 14px; color: #666;">See Stableford points instantly as scores are entered.</p>
-                </div>
-                
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                    <h4 style="color: #1e3c72; margin-bottom: 10px;">🏅 Countback</h4>
-                    <p style="font-size: 14px; color: #666;">Automatic countback resolution (back 9, 6, 3, last hole).</p>
-                </div>
-                
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                    <h4 style="color: #1e3c72; margin-bottom: 10px;">🖨️ Print Ready</h4>
-                    <p style="font-size: 14px; color: #666;">Presentation page prints beautifully for physical handouts.</p>
-                </div>
+        <!-- TESTING -->
+        <div class="card">
+            <h2>🧪 Practice &amp; Help</h2>
+            <div class="grid">
+                <a class="tile" href="golf-tournament-SIMPLE-SETUP.html"><strong>Test Data</strong><span>One click creates 8 pretend players</span></a>
+                <a class="tile" href="player-guide.html"><strong>Player Guide</strong><span>Show players how it works</span></a>
+                <a class="tile" href="ADMIN-GUIDE.md"><strong>Admin Guide</strong><span>Full manual &amp; backup rules</span></a>
             </div>
         </div>
     </div>
+
+    <script>
+        function copyLink(id, btn) {
+            navigator.clipboard.writeText(document.getElementById(id).textContent).then(function() {
+                btn.textContent = '✓ Copied';
+                setTimeout(function(){ btn.textContent = 'Copy'; }, 2000);
+            });
+        }
+    </script>
 </body>
 </html>

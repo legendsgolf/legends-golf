@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legends Golf - Score Editor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --orange: #F7931A; --dark: #1a1a1a; --green: #28a745; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 720px; margin: 0 auto; }
+
+        .header {
+            background: var(--orange);
+            color: var(--dark);
+            padding: 22px;
+            border-radius: 14px;
+            margin-bottom: 18px;
+        }
+        .header h1 { font-size: 24px; }
+        .header p { margin-top: 4px; font-weight: 600; }
+
+        .card { background: white; border-radius: 14px; padding: 22px; margin-bottom: 18px; }
+
+        .msg { padding: 12px 15px; border-radius: 8px; font-size: 14px; margin: 12px 0; }
+        .msg.ok { background: #d4edda; color: #155724; }
+        .msg.warn { background: #fff3cd; color: #856404; }
+        .msg.err { background: #f8d7da; color: #721c24; }
+        .msg.info { background: #d1ecf1; color: #0c5460; }
+
+        label { font-weight: 600; font-size: 14px; display: block; margin: 12px 0 5px; }
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th { background: var(--dark); color: white; padding: 8px 4px; font-size: 12px; }
+        td { border-bottom: 1px solid #eee; padding: 6px 4px; text-align: center; font-size: 14px; }
+        td.holecol { font-weight: 700; }
+        td.sicol { font-size: 11px; color: #999; }
+        input.score {
+            width: 52px;
+            padding: 9px 2px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            border: 2px solid var(--orange);
+            border-radius: 8px;
+        }
+        input.score.changed { background: #fff3cd; border-color: #e0a800; }
+        .pts { color: var(--orange); font-weight: 700; font-style: italic; }
+        tr.subtotal td { background: #f0f0f0; font-weight: 700; padding: 8px 4px; }
+        tr.grandtotal td { background: var(--dark); color: var(--orange); font-weight: 700; font-size: 15px; padding: 10px 4px; }
+
+        .btn {
+            background: var(--green);
+            color: white;
+            border: none;
+            padding: 14px 26px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 16px;
+        }
+        .btn:hover { opacity: 0.92; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✏️ Score Editor</h1>
+            <p>Change any score, any hole, any player — updates every competition</p>
+        </div>
+
+        <div class="card">
+            <div class="msg info">
+                One edit here updates <strong>everything automatically</strong> — Stableford, Skins, Eclectic, Best Ball and the Presentation all read from this same scorecard. It also corrects the cloud copy so the change can never be overwritten by a later import.
+            </div>
+
+            <div id="noData" class="msg warn hidden">No tournament found on this computer. Set up the tournament first (or run the imports), then come back.</div>
+
+            <div id="editor">
+                <label>Round</label>
+                <select id="selRound" onchange="loadCard()"></select>
+
+                <label>Player</label>
+                <select id="selPlayer" onchange="loadCard()"></select>
+
+                <div id="cardArea"></div>
+                <button class="btn hidden" id="saveBtn" onclick="saveScores()">💾 Save Changes (updates all competitions)</button>
+                <div id="saveResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBwxX5gwNp9bK4UWHpXsr3IZyvqspYRcvw",
+            authDomain: "legends-golf.firebaseapp.com",
+            projectId: "legends-golf",
+            storageBucket: "legends-golf.firebasestorage.app",
+            messagingSenderId: "562122549024",
+            appId: "1:562122549024:web:5c8d04bc53fd1995831945"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const SCORES = db.collection('tournaments').doc('legends-golf').collection('scores');
+
+        let t = null;
+        let original = [];   // scores as loaded, to highlight edits
+
+        function init() {
+            const raw = localStorage.getItem('golfTournamentData');
+            if (!raw) {
+                document.getElementById('noData').classList.remove('hidden');
+                document.getElementById('editor').classList.add('hidden');
+                return;
+            }
+            t = JSON.parse(raw);
+
+            const sr = document.getElementById('selRound');
+            sr.innerHTML = '';
+            t.rounds.forEach(function(r, i) {
+                sr.innerHTML += '<option value="' + i + '">Round ' + r.number + '</option>';
+            });
+
+            const sp = document.getElementById('selPlayer');
+            sp.innerHTML = '<option value="">-- Choose player --</option>';
+            t.players.forEach(function(p) {
+                sp.innerHTML += '<option value="' + p.id + '">' + p.name + ' (HCP ' + p.playingHandicap + ')</option>';
+            });
+        }
+
+        function currentPlayer() {
+            const id = parseInt(document.getElementById('selPlayer').value);
+            return t.players.find(function(p){ return p.id === id; }) || null;
+        }
+
+        function loadCard() {
+            const p = currentPlayer();
+            const area = document.getElementById('cardArea');
+            const btn = document.getElementById('saveBtn');
+            document.getElementById('saveResult').innerHTML = '';
+            if (!p) { area.innerHTML = ''; btn.classList.add('hidden'); return; }
+
+            const r = parseInt(document.getElementById('selRound').value);
+            t.rounds[r].scores = t.rounds[r].scores || {};
+            const existing = t.rounds[r].scores[p.id] || Array(18).fill(null);
+            original = existing.slice();
+
+            let h = '<table><tr><th>Hole</th><th>Par</th><th>Score</th><th>Pts</th></tr>';
+            for (let i = 0; i < 18; i++) {
+                const hole = t.course.holes[i];
+                h += '<tr><td class="holecol">' + (i+1) + '<div class="sicol">SI ' + hole.strokeIndex + '</div></td>';
+                h += '<td>' + hole.par + '</td>';
+                h += '<td><input class="score" type="number" min="1" max="19" id="s-' + i + '" value="' + (existing[i] || '') + '" oninput="recalc()"></td>';
+                h += '<td class="pts" id="p-' + i + '">-</td></tr>';
+                if (i === 8) h += '<tr class="subtotal"><td colspan="2">OUT</td><td id="t-out">0</td><td id="pt-out">0</td></tr>';
+            }
+            h += '<tr class="subtotal"><td colspan="2">IN</td><td id="t-in">0</td><td id="pt-in">0</td></tr>';
+            h += '<tr class="grandtotal"><td colspan="2">TOTAL</td><td id="t-tot">0</td><td id="pt-tot">0</td></tr>';
+            h += '</table>';
+            area.innerHTML = h;
+            btn.classList.remove('hidden');
+            recalc();
+        }
+
+        function strokesReceived(hcp, si) {
+            if (hcp <= 0) return 0;
+            if (hcp >= si) return Math.floor(hcp / 18) + 1;
+            if (hcp >= si - 18) return 1;
+            return 0;
+        }
+        function stbPts(gross, hcp, hole) {
+            if (!gross) return 0;
+            const rel = (gross - strokesReceived(hcp, hole.strokeIndex)) - hole.par;
+            if (rel <= -2) return 4;
+            if (rel === -1) return 3;
+            if (rel === 0) return 2;
+            if (rel === 1) return 1;
+            return 0;
+        }
+
+        function readScores() {
+            const arr = [];
+            for (let i = 0; i < 18; i++) {
+                const v = parseInt(document.getElementById('s-' + i).value);
+                arr[i] = (v > 0 && v < 20) ? v : null;
+            }
+            return arr;
+        }
+
+        function recalc() {
+            const p = currentPlayer();
+            const arr = readScores();
+            let out = 0, inn = 0, pout = 0, pin = 0;
+            for (let i = 0; i < 18; i++) {
+                const hole = t.course.holes[i];
+                const pts = stbPts(arr[i], p.playingHandicap, hole);
+                document.getElementById('p-' + i).textContent = arr[i] ? pts : '-';
+                const inp = document.getElementById('s-' + i);
+                inp.classList.toggle('changed', (arr[i] || null) !== (original[i] || null));
+                if (i < 9) { out += arr[i] || 0; pout += arr[i] ? pts : 0; }
+                else { inn += arr[i] || 0; pin += arr[i] ? pts : 0; }
+            }
+            document.getElementById('t-out').textContent = out;
+            document.getElementById('t-in').textContent = inn;
+            document.getElementById('t-tot').textContent = out + inn;
+            document.getElementById('pt-out').textContent = pout;
+            document.getElementById('pt-in').textContent = pin;
+            document.getElementById('pt-tot').textContent = pout + pin;
+        }
+
+        function saveScores() {
+            const p = currentPlayer();
+            const r = parseInt(document.getElementById('selRound').value);
+            const arr = readScores();
+            const out = document.getElementById('saveResult');
+
+            // 1. Save to this computer - every competition page reads this
+            t.rounds[r].scores[p.id] = arr;
+            localStorage.setItem('golfTournamentData', JSON.stringify(t));
+            original = arr.slice();
+            recalc();
+
+            out.innerHTML = '<div class="msg ok">✅ Saved. All leaderboards and the presentation now use the corrected scores (refresh those pages to see it).</div>';
+
+            // 2. Correct the cloud copy too, so a later import can't undo this edit
+            SCORES.where('round', '==', r).where('subjectId', '==', p.id).get().then(function(snap) {
+                if (snap.empty) {
+                    return SCORES.doc('r' + r + '_p' + p.id + '_by' + p.id).set({
+                        round: r, subjectId: p.id, subjectName: p.name,
+                        enteredById: p.id, enteredByName: p.name + ' (admin entry)',
+                        scores: arr, complete: true, adminCorrected: true, updatedAt: Date.now()
+                    });
+                }
+                const updates = [];
+                snap.forEach(function(d) {
+                    updates.push(d.ref.update({ scores: arr, adminCorrected: true, updatedAt: Date.now() }));
+                });
+                return Promise.all(updates);
+            }).then(function() {
+                out.innerHTML += '<div class="msg ok">☁️ Cloud copy corrected too.</div>';
+            }).catch(function(e) {
+                out.innerHTML += '<div class="msg warn">⚠️ Saved on this computer, but the cloud copy couldn\'t be updated (' + e.message + '). If you import from the cloud later, re-check this player.</div>';
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>

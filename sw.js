@@ -1,9 +1,10 @@
 // Legends Golf - Service Worker
 // Enables offline use after the first visit.
 
-const CACHE_NAME = 'legends-golf-v2';
+const CACHE_NAME = 'legends-golf-v3';
 const urlsToCache = [
   './legends-player.html',
+  './legends-ambrose.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
